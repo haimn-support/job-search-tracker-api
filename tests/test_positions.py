@@ -477,6 +477,98 @@ class TestUpdatePosition:
         assert response.status_code == 403
 
 
+class TestUpdatePositionStatus:
+    """Test cases for updating position status."""
+    
+    def test_update_position_status_success(self, auth_headers: dict, created_position: Position):
+        """Test successful position status update."""
+        status_data = {"status": "interviewing"}
+        
+        response = client.put(
+            f"/api/v1/positions/{created_position.id}/status",
+            json=status_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "interviewing"
+        assert data["id"] == str(created_position.id)
+        assert data["title"] == created_position.title  # Other fields unchanged
+    
+    def test_update_position_status_invalid_status(self, auth_headers: dict, created_position: Position):
+        """Test updating position status with invalid status."""
+        status_data = {"status": "invalid_status"}
+        
+        response = client.put(
+            f"/api/v1/positions/{created_position.id}/status",
+            json=status_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+    
+    def test_update_position_status_not_found(self, auth_headers: dict):
+        """Test updating status of a non-existent position."""
+        fake_id = uuid4()
+        status_data = {"status": "rejected"}
+        
+        response = client.put(
+            f"/api/v1/positions/{fake_id}/status",
+            json=status_data,
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 404
+    
+    def test_update_position_status_unauthorized(self, created_position: Position):
+        """Test updating position status without authentication."""
+        status_data = {"status": "offer"}
+        
+        response = client.put(
+            f"/api/v1/positions/{created_position.id}/status",
+            json=status_data
+        )
+        
+        assert response.status_code == 403
+    
+    def test_update_position_status_other_user(self, db_session: Session, created_position: Position):
+        """Test updating status of a position that belongs to another user."""
+        # Create another user
+        other_user = User(
+            email="other@example.com",
+            password_hash="hashed_password",
+            first_name="Other",
+            last_name="User"
+        )
+        db_session.add(other_user)
+        db_session.commit()
+        
+        # Create token for other user
+        token = create_access_token(data={"sub": str(other_user.id)})
+        headers = {"Authorization": f"Bearer {token}"}
+        
+        status_data = {"status": "rejected"}
+        
+        response = client.put(
+            f"/api/v1/positions/{created_position.id}/status",
+            json=status_data,
+            headers=headers
+        )
+        
+        assert response.status_code == 404
+    
+    def test_update_position_status_missing_status(self, auth_headers: dict, created_position: Position):
+        """Test updating position status without providing status field."""
+        response = client.put(
+            f"/api/v1/positions/{created_position.id}/status",
+            json={},
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+
+
 class TestDeletePosition:
     """Test cases for deleting positions."""
     

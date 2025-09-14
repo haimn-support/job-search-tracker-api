@@ -147,6 +147,27 @@ class PositionRepository:
         self.db.refresh(db_position)
         return db_position
     
+    def update_status(self, position_id: UUID, user_id: UUID, status: PositionStatus) -> Optional[Position]:
+        """
+        Update only the status of a position, ensuring it belongs to the specified user.
+        
+        Args:
+            position_id: The position ID to update
+            user_id: The user ID to verify ownership
+            status: New position status
+            
+        Returns:
+            The updated Position object if found and owned by user, None otherwise
+        """
+        db_position = self.get_by_id(position_id, user_id)
+        if not db_position:
+            return None
+        
+        db_position.status = status
+        self.db.commit()
+        self.db.refresh(db_position)
+        return db_position
+    
     def delete(self, position_id: UUID, user_id: UUID) -> bool:
         """
         Delete a position, ensuring it belongs to the specified user.

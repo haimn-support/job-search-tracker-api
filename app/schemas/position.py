@@ -35,6 +35,11 @@ class PositionUpdate(BaseModel):
     application_date: Optional[date] = Field(None, description="Date when application was submitted")
 
 
+class PositionStatusUpdate(BaseModel):
+    """Schema for updating position status only."""
+    status: PositionStatus = Field(..., description="New application status")
+
+
 class PositionResponse(PositionBase):
     """Schema for position response data."""
     id: UUID = Field(..., description="Position unique identifier")

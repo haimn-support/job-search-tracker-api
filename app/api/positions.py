@@ -12,6 +12,7 @@ from ..repositories.position_repository import PositionRepository
 from ..schemas.position import (
     PositionCreate,
     PositionUpdate,
+    PositionStatusUpdate,
     PositionResponse,
     PositionListResponse
 )
@@ -139,6 +140,29 @@ async def update_position(
     Only provided fields will be updated.
     """
     position = position_repo.update(position_id, current_user_id, position_data)
+    if not position:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Position not found"
+        )
+    
+    return PositionResponse.model_validate(position)
+
+
+@router.put("/{position_id}/status", response_model=PositionResponse)
+async def update_position_status(
+    position_id: UUID,
+    status_data: PositionStatusUpdate,
+    current_user_id: UUID = Depends(get_current_user_id),
+    position_repo: PositionRepository = Depends(get_position_repository)
+):
+    """
+    Update the status of a specific position.
+    
+    Updates only the status field of the position if it exists and belongs to the authenticated user.
+    This is a convenient endpoint for quick status updates without needing to send all position data.
+    """
+    position = position_repo.update_status(position_id, current_user_id, status_data.status)
     if not position:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
