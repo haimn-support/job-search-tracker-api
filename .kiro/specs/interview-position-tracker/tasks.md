@@ -33,7 +33,7 @@
   - Write integration tests for all position endpoints
   - _Requirements: 1.1, 1.2, 1.4, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3_
 
-- [ ] 6. Implement interview stage tracking
+- [x] 6. Implement interview stage tracking
   - Create CRUD endpoints for interview stages linked to positions
   - Add validation for interview types, dates, and outcomes
   - Implement cascade deletion when positions are removed

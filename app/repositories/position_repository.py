@@ -3,7 +3,7 @@ Repository layer for position data access operations.
 """
 from typing import List, Optional
 from uuid import UUID
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, or_, desc, asc
 from datetime import date
 from ..models.position import Position, PositionStatus
@@ -47,7 +47,9 @@ class PositionRepository:
         Returns:
             The Position object if found and owned by user, None otherwise
         """
-        return self.db.query(Position).filter(
+        return self.db.query(Position).options(
+            joinedload(Position.interviews)
+        ).filter(
             and_(Position.id == position_id, Position.user_id == user_id)
         ).first()
     
@@ -117,8 +119,10 @@ class PositionRepository:
         else:
             query = query.order_by(desc(sort_column))
         
-        # Apply pagination
-        positions = query.offset(skip).limit(limit).all()
+        # Apply pagination and load interviews
+        positions = query.options(
+            joinedload(Position.interviews)
+        ).offset(skip).limit(limit).all()
         
         return positions, total
     

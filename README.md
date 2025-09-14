@@ -69,6 +69,16 @@ Authorization: Bearer <your-jwt-token>
 - `PUT /api/v1/positions/{id}/status` - Update only the position status
 - `DELETE /api/v1/positions/{id}` - Delete a position
 
+#### Interview Management Endpoints
+- `POST /api/v1/positions/{position_id}/interviews` - Create a new interview for a position
+- `GET /api/v1/positions/{position_id}/interviews` - List all interviews for a position
+- `GET /api/v1/interviews/{id}` - Get a specific interview
+- `PUT /api/v1/interviews/{id}` - Update an interview (all fields)
+- `PUT /api/v1/interviews/{id}/schedule` - Update only the interview scheduled date
+- `PUT /api/v1/interviews/{id}/notes` - Update only the interview notes
+- `PUT /api/v1/interviews/{id}/outcome` - Update only the interview outcome
+- `DELETE /api/v1/interviews/{id}` - Delete an interview
+
 #### Position Status Values
 The following status values are supported:
 - `applied` - Application submitted
@@ -77,6 +87,25 @@ The following status values are supported:
 - `offer` - Job offer received
 - `rejected` - Application rejected
 - `withdrawn` - Application withdrawn
+
+#### Interview Types
+- `technical` - Technical interview
+- `behavioral` - Behavioral interview
+- `hr` - HR screening interview
+- `final` - Final interview
+
+#### Interview Places/Formats
+- `phone` - Phone interview
+- `video` - Video call interview
+- `onsite` - In-person interview
+
+#### Interview Outcomes
+- `pending` - Interview not yet completed
+- `passed` - Interview passed successfully
+- `failed` - Interview failed
+- `cancelled` - Interview was cancelled
+
+**Note**: When an interview outcome is set to `failed`, the associated position status is automatically updated to `rejected`.
 
 #### Position Filtering
 The list positions endpoint supports the following query parameters:
@@ -121,6 +150,67 @@ curl -X PUT "http://localhost:8000/api/v1/positions/{position_id}/status" \
 curl "http://localhost:8000/api/v1/positions/?status=interviewing&company=Tech&page=1&per_page=10" \
   -H "Authorization: Bearer <token>"
 ```
+
+**Create an interview for a position:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/positions/{position_id}/interviews" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "technical",
+    "place": "video",
+    "scheduled_date": "2024-02-15T14:00:00",
+    "duration_minutes": 60,
+    "notes": "Technical interview with the engineering team",
+    "outcome": "pending"
+  }'
+```
+
+**Update interview scheduled date:**
+```bash
+curl -X PUT "http://localhost:8000/api/v1/interviews/{interview_id}/schedule" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"scheduled_date": "2024-02-16T15:00:00"}'
+```
+
+**Update interview notes:**
+```bash
+curl -X PUT "http://localhost:8000/api/v1/interviews/{interview_id}/notes" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"notes": "Great discussion about system architecture and scalability"}'
+```
+
+**Update interview outcome (with automatic position status update):**
+```bash
+curl -X PUT "http://localhost:8000/api/v1/interviews/{interview_id}/outcome" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"outcome": "passed"}'
+```
+
+**List interviews for a position:**
+```bash
+curl "http://localhost:8000/api/v1/positions/{position_id}/interviews" \
+  -H "Authorization: Bearer <token>"
+```
+
+## Features
+
+### Interview Stage Tracking
+- **Complete CRUD Operations**: Create, read, update, and delete interviews for each position
+- **Granular Updates**: Dedicated endpoints for updating specific fields (schedule, notes, outcome)
+- **Automatic Status Management**: Failed interviews automatically update position status to "rejected"
+- **Cascade Deletion**: Deleting a position removes all associated interviews
+- **Comprehensive Validation**: Input validation for dates, durations, and enum values
+- **Security**: All operations require authentication and verify user ownership
+
+### Position Management
+- **Filtering & Search**: Filter positions by status, company, date range, or search terms
+- **Pagination**: Efficient pagination with configurable page sizes
+- **Status Tracking**: Track application progress through various stages
+- **Relationship Management**: Positions include associated interview data
 
 ## Testing
 

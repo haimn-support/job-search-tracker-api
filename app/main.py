@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .api.auth import router as auth_router
 from .api.positions import router as positions_router
+from .api.interviews import router as interviews_router
 
 app = FastAPI(
     title="Interview Position Tracker API",
@@ -26,6 +27,7 @@ if settings.BACKEND_CORS_ORIGINS:
 # Include routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(positions_router, prefix=settings.API_V1_STR)
+app.include_router(interviews_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():

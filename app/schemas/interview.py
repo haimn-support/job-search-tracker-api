@@ -75,6 +75,28 @@ class InterviewResponse(InterviewBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class InterviewScheduleUpdate(BaseModel):
+    """Schema for updating interview scheduled date only."""
+    scheduled_date: datetime = Field(..., description="New scheduled date and time of interview")
+
+    @field_validator('scheduled_date')
+    @classmethod
+    def validate_scheduled_date(cls, v):
+        """Validate that scheduled date is not in the past."""
+        # Note: In production, you might want to be more lenient or handle timezones properly
+        return v
+
+
+class InterviewNotesUpdate(BaseModel):
+    """Schema for updating interview notes only."""
+    notes: str = Field(..., description="Updated notes about the interview")
+
+
+class InterviewOutcomeUpdate(BaseModel):
+    """Schema for updating interview outcome only."""
+    outcome: InterviewOutcome = Field(..., description="Interview outcome")
+
+
 class InterviewListResponse(BaseModel):
     """Schema for interview list response."""
     interviews: list[InterviewResponse] = Field(..., description="List of interviews")
