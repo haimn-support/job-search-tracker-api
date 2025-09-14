@@ -13,7 +13,7 @@
   - Write unit tests for model validation and relationships
   - _Requirements: 8.1, 8.4_
 
-- [ ] 3. Create Pydantic schemas and validation
+- [x] 3. Create Pydantic schemas and validation
   - Implement Pydantic models for request/response validation
   - Create enum classes for position status, interview types, and outcomes
   - Write validation tests for all schema models
