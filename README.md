@@ -79,6 +79,11 @@ Authorization: Bearer <your-jwt-token>
 - `PUT /api/v1/interviews/{id}/outcome` - Update only the interview outcome
 - `DELETE /api/v1/interviews/{id}` - Delete an interview
 
+#### Statistics & Analytics Endpoints
+- `GET /api/v1/statistics/overview` - Get overview statistics with conversion rates and breakdowns
+- `GET /api/v1/statistics/timeline` - Get timeline-based statistics with monthly trends
+- `GET /api/v1/statistics/companies` - Get company-based statistics and success rates
+
 #### Position Status Values
 The following status values are supported:
 - `applied` - Application submitted
@@ -223,6 +228,166 @@ curl "http://localhost:8000/api/v1/positions/{position_id}/interviews" \
   -H "Authorization: Bearer <token>"
 ```
 
+### Statistics & Analytics
+
+The API provides comprehensive statistics and analytics endpoints to help track your job search progress and identify trends.
+
+#### Statistics Filtering
+All statistics endpoints support optional query parameters for filtering:
+- `start_date` - Filter data from this date (YYYY-MM-DD)
+- `end_date` - Filter data up to this date (YYYY-MM-DD)
+- `company` - Filter by company name (partial match)
+- `status` - Filter by position status
+
+#### Overview Statistics
+Get comprehensive metrics about your job applications:
+
+```bash
+curl "http://localhost:8000/api/v1/statistics/overview" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response includes:**
+- Total applications, companies, and interviews
+- Response rate (% of applications that got responses)
+- Interview rate (% of applications that led to interviews)
+- Offer rate (% of applications that led to offers)
+- Breakdowns by position status, interview type, and interview outcome
+
+**Example response:**
+```json
+{
+  "total_applications": 25,
+  "total_companies": 18,
+  "total_interviews": 12,
+  "response_rate": 68.0,
+  "interview_rate": 48.0,
+  "offer_rate": 12.0,
+  "status_breakdown": {
+    "applied": 8,
+    "screening": 3,
+    "interviewing": 6,
+    "offer": 3,
+    "rejected": 4,
+    "withdrawn": 1
+  },
+  "interview_type_breakdown": {
+    "technical": 8,
+    "behavioral": 6,
+    "hr": 4,
+    "final": 2
+  },
+  "interview_outcome_breakdown": {
+    "pending": 3,
+    "passed": 7,
+    "failed": 2,
+    "cancelled": 0
+  }
+}
+```
+
+#### Timeline Statistics
+Get time-based analytics to track trends over time:
+
+```bash
+curl "http://localhost:8000/api/v1/statistics/timeline?start_date=2024-01-01&end_date=2024-12-31" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response includes:**
+- Applications and interviews per month
+- Average response time from application to first interview
+- Average time from interview to final decision
+
+**Example response:**
+```json
+{
+  "period_start": "2024-01-01",
+  "period_end": "2024-12-31",
+  "applications_per_month": [
+    {"month": "2024-01", "count": 8},
+    {"month": "2024-02", "count": 12},
+    {"month": "2024-03", "count": 5}
+  ],
+  "interviews_per_month": [
+    {"month": "2024-01", "count": 3},
+    {"month": "2024-02", "count": 7},
+    {"month": "2024-03", "count": 2}
+  ],
+  "average_response_time_days": 12.5,
+  "average_interview_to_decision_days": 8.2
+}
+```
+
+#### Company Statistics
+Get detailed statistics broken down by company:
+
+```bash
+curl "http://localhost:8000/api/v1/statistics/companies" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response includes:**
+- Statistics for each company you've applied to
+- Success rates and application counts per company
+- Companies sorted by total applications (descending)
+
+**Example response:**
+```json
+{
+  "companies": [
+    {
+      "company_name": "TechCorp",
+      "total_applications": 3,
+      "total_interviews": 2,
+      "latest_application_date": "2024-02-15",
+      "status_breakdown": {
+        "applied": 1,
+        "interviewing": 1,
+        "offer": 1,
+        "rejected": 0,
+        "screening": 0,
+        "withdrawn": 0
+      },
+      "success_rate": 33.33
+    },
+    {
+      "company_name": "StartupInc",
+      "total_applications": 2,
+      "total_interviews": 1,
+      "latest_application_date": "2024-02-10",
+      "status_breakdown": {
+        "applied": 1,
+        "rejected": 1,
+        "interviewing": 0,
+        "offer": 0,
+        "screening": 0,
+        "withdrawn": 0
+      },
+      "success_rate": 0.0
+    }
+  ],
+  "total_companies": 2
+}
+```
+
+#### Statistics with Filters
+Apply filters to focus on specific time periods or companies:
+
+```bash
+# Get statistics for a specific time period
+curl "http://localhost:8000/api/v1/statistics/overview?start_date=2024-01-01&end_date=2024-03-31" \
+  -H "Authorization: Bearer <token>"
+
+# Get statistics for specific companies
+curl "http://localhost:8000/api/v1/statistics/companies?company=Tech" \
+  -H "Authorization: Bearer <token>"
+
+# Get timeline statistics for specific status
+curl "http://localhost:8000/api/v1/statistics/timeline?status=interviewing" \
+  -H "Authorization: Bearer <token>"
+```
+
 ## Features
 
 ### Interview Stage Tracking
@@ -238,6 +403,14 @@ curl "http://localhost:8000/api/v1/positions/{position_id}/interviews" \
 - **Pagination**: Efficient pagination with configurable page sizes
 - **Status Tracking**: Track application progress through various stages
 - **Relationship Management**: Positions include associated interview data
+
+### Statistics & Analytics
+- **Overview Metrics**: Track total applications, response rates, interview rates, and offer rates
+- **Conversion Analysis**: Calculate success rates and conversion funnels
+- **Timeline Trends**: Monitor application and interview activity over time with monthly breakdowns
+- **Company Insights**: Analyze performance and success rates by company
+- **Flexible Filtering**: Apply date range, company, and status filters to all statistics
+- **Performance Tracking**: Average response times and decision timelines
 
 ## Testing
 

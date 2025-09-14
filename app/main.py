@@ -7,6 +7,7 @@ from .core.config import settings
 from .api.auth import router as auth_router
 from .api.positions import router as positions_router
 from .api.interviews import router as interviews_router
+from .api.statistics import router as statistics_router
 
 app = FastAPI(
     title="Interview Position Tracker API",
@@ -28,6 +29,7 @@ if settings.BACKEND_CORS_ORIGINS:
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(positions_router, prefix=settings.API_V1_STR)
 app.include_router(interviews_router, prefix=settings.API_V1_STR)
+app.include_router(statistics_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():

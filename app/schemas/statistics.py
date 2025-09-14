@@ -3,7 +3,7 @@ Pydantic schemas for statistics-related operations.
 """
 from pydantic import BaseModel, Field
 from datetime import date
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Union, Any
 from .enums import PositionStatus, InterviewType, InterviewOutcome
 
 
@@ -25,8 +25,8 @@ class TimelineStatistics(BaseModel):
     """Schema for time-based statistics."""
     period_start: date = Field(..., description="Start date of the period")
     period_end: date = Field(..., description="End date of the period")
-    applications_per_month: List[Dict[str, int]] = Field(..., description="Applications count per month")
-    interviews_per_month: List[Dict[str, int]] = Field(..., description="Interviews count per month")
+    applications_per_month: List[Dict[str, Union[str, int]]] = Field(..., description="Applications count per month")
+    interviews_per_month: List[Dict[str, Union[str, int]]] = Field(..., description="Interviews count per month")
     average_response_time_days: Optional[float] = Field(None, description="Average days to get response")
     average_interview_to_decision_days: Optional[float] = Field(None, description="Average days from interview to decision")
 
