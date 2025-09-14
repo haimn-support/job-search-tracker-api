@@ -341,6 +341,221 @@ class TestListPositions:
         response = client.get("/api/v1/positions/")
         
         assert response.status_code == 403
+    
+    def test_list_positions_combined_filters(self, auth_headers: dict, db_session: Session, test_user: User):
+        """Test listing positions with multiple filters combined."""
+        # Create positions with various attributes
+        positions = [
+            Position(
+                user_id=test_user.id,
+                title="Senior Python Developer",
+                company="Tech Corp",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 10)
+            ),
+            Position(
+                user_id=test_user.id,
+                title="Frontend Engineer",
+                company="Tech Corp",
+                status=PositionStatus.INTERVIEWING,
+                application_date=date(2024, 1, 15)
+            ),
+            Position(
+                user_id=test_user.id,
+                title="Python Developer",
+                company="Other Company",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 20)
+            )
+        ]
+        db_session.add_all(positions)
+        db_session.commit()
+        
+        # Filter by status, company, and search term
+        response = client.get(
+            "/api/v1/positions/?status=applied&company=Tech&search=Python",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 1
+        assert data["positions"][0]["status"] == "applied"
+        assert "Tech" in data["positions"][0]["company"]
+        assert "Python" in data["positions"][0]["title"]
+    
+    def test_list_positions_sorting_options(self, auth_headers: dict, db_session: Session, test_user: User):
+        """Test listing positions with different sorting options."""
+        # Create positions with different dates and titles
+        positions = [
+            Position(
+                user_id=test_user.id,
+                title="A Position",
+                company="Company A",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 20)
+            ),
+            Position(
+                user_id=test_user.id,
+                title="B Position",
+                company="Company B",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 10)
+            ),
+            Position(
+                user_id=test_user.id,
+                title="C Position",
+                company="Company C",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 15)
+            )
+        ]
+        db_session.add_all(positions)
+        db_session.commit()
+        
+        # Test sorting by title ascending
+        response = client.get(
+            "/api/v1/positions/?sort_by=title&sort_order=asc",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 3
+        assert data["positions"][0]["title"] == "A Position"
+        assert data["positions"][1]["title"] == "B Position"
+        assert data["positions"][2]["title"] == "C Position"
+        
+        # Test sorting by application_date descending (default)
+        response = client.get(
+            "/api/v1/positions/?sort_by=application_date&sort_order=desc",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["positions"][0]["application_date"] == "2024-01-20"
+        assert data["positions"][1]["application_date"] == "2024-01-15"
+        assert data["positions"][2]["application_date"] == "2024-01-10"
+    
+    def test_list_positions_pagination_edge_cases(self, auth_headers: dict, db_session: Session, test_user: User):
+        """Test pagination edge cases."""
+        # Create exactly 3 positions
+        positions = []
+        for i in range(3):
+            position = Position(
+                user_id=test_user.id,
+                title=f"Position {i}",
+                company=f"Company {i}",
+                status=PositionStatus.APPLIED,
+                application_date=date(2024, 1, 15 + i)
+            )
+            positions.append(position)
+        
+        db_session.add_all(positions)
+        db_session.commit()
+        
+        # Test requesting page beyond available data
+        response = client.get(
+            "/api/v1/positions/?page=5&per_page=2",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 0
+        assert data["total"] == 3
+        assert data["page"] == 5
+        assert data["has_next"] is False
+        assert data["has_prev"] is True
+        
+        # Test with per_page larger than total items
+        response = client.get(
+            "/api/v1/positions/?page=1&per_page=10",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 3
+        assert data["total"] == 3
+        assert data["has_next"] is False
+        assert data["has_prev"] is False
+    
+    def test_list_positions_invalid_query_params(self, auth_headers: dict):
+        """Test listing positions with invalid query parameters."""
+        # Test invalid status
+        response = client.get(
+            "/api/v1/positions/?status=invalid_status",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+        
+        # Test invalid date format
+        response = client.get(
+            "/api/v1/positions/?date_from=invalid_date",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+        
+        # Test invalid sort order
+        response = client.get(
+            "/api/v1/positions/?sort_order=invalid",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+        
+        # Test invalid page number
+        response = client.get(
+            "/api/v1/positions/?page=0",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+        
+        # Test invalid per_page (too large)
+        response = client.get(
+            "/api/v1/positions/?per_page=200",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 422
+    
+    def test_list_positions_empty_filters(self, auth_headers: dict, db_session: Session, test_user: User):
+        """Test listing positions with empty filter values."""
+        # Create a test position
+        position = Position(
+            user_id=test_user.id,
+            title="Test Position",
+            company="Test Company",
+            status=PositionStatus.APPLIED,
+            application_date=date(2024, 1, 15)
+        )
+        db_session.add(position)
+        db_session.commit()
+        
+        # Test with empty search term
+        response = client.get(
+            "/api/v1/positions/?search=",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 1  # Should return all positions
+        
+        # Test with empty company filter
+        response = client.get(
+            "/api/v1/positions/?company=",
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["positions"]) == 1  # Should return all positions
 
 
 class TestGetPosition:

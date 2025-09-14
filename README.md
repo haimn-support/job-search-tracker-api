@@ -107,17 +107,35 @@ The following status values are supported:
 
 **Note**: When an interview outcome is set to `failed`, the associated position status is automatically updated to `rejected`.
 
-#### Position Filtering
-The list positions endpoint supports the following query parameters:
-- `status` - Filter by position status
-- `company` - Filter by company name (partial match)
-- `date_from` - Filter positions from this application date
-- `date_to` - Filter positions up to this application date
-- `search` - Search in title, company, or description
-- `sort_by` - Field to sort by (default: application_date)
+#### Position Filtering & Pagination
+The list positions endpoint supports comprehensive filtering and pagination:
+
+**Filtering Parameters:**
+- `status` - Filter by position status (applied, interviewing, rejected, etc.)
+- `company` - Filter by company name (partial match, case-insensitive)
+- `date_from` - Filter positions from this application date (YYYY-MM-DD)
+- `date_to` - Filter positions up to this application date (YYYY-MM-DD)
+- `search` - Full-text search across title, company, and description fields
+
+**Sorting Parameters:**
+- `sort_by` - Field to sort by: application_date, title, company (default: application_date)
 - `sort_order` - Sort order: asc or desc (default: desc)
+
+**Pagination Parameters:**
 - `page` - Page number (1-based, default: 1)
-- `per_page` - Number of items per page (default: 20, max: 100)
+- `per_page` - Number of items per page (1-100, default: 20)
+
+**Response Format:**
+```json
+{
+  "positions": [...],
+  "total": 25,
+  "page": 1,
+  "per_page": 20,
+  "has_next": true,
+  "has_prev": false
+}
+```
 
 #### Example API Usage
 
@@ -145,9 +163,18 @@ curl -X PUT "http://localhost:8000/api/v1/positions/{position_id}/status" \
   -d '{"status": "interviewing"}'
 ```
 
-**List positions with filtering:**
+**List positions with filtering and pagination:**
 ```bash
+# Filter by status and company with pagination
 curl "http://localhost:8000/api/v1/positions/?status=interviewing&company=Tech&page=1&per_page=10" \
+  -H "Authorization: Bearer <token>"
+
+# Search with date range filtering
+curl "http://localhost:8000/api/v1/positions/?search=Python&date_from=2024-01-01&date_to=2024-12-31&sort_by=title&sort_order=asc" \
+  -H "Authorization: Bearer <token>"
+
+# Combined filters
+curl "http://localhost:8000/api/v1/positions/?status=applied&company=startup&search=engineer&page=2&per_page=5" \
   -H "Authorization: Bearer <token>"
 ```
 
