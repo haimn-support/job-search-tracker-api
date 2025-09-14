@@ -88,12 +88,15 @@ class PositionStatus(str, Enum):
     WITHDRAWN = "withdrawn"
 
 class InterviewType(str, Enum):
+    TECHNICAL = "technical"
+    BEHAVIORAL = "behavioral"
+    HR = "hr"
+    FINAL = "final"
+
+class InterviewPlace(str, Enum):
     PHONE = "phone"
     VIDEO = "video"
     ONSITE = "onsite"
-    TECHNICAL = "technical"
-    BEHAVIORAL = "behavioral"
-    FINAL = "final"
 
 class InterviewOutcome(str, Enum):
     PENDING = "pending"
@@ -121,6 +124,7 @@ class PositionResponse(PositionBase):
 
 class InterviewBase(BaseModel):
     type: InterviewType
+    place: InterviewPlace
     scheduled_date: datetime
     duration_minutes: Optional[int] = None
     notes: Optional[str] = None
@@ -171,7 +175,8 @@ CREATE TABLE positions (
 CREATE TABLE interviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     position_id UUID NOT NULL REFERENCES positions(id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('phone', 'video', 'onsite', 'technical', 'behavioral', 'final')),
+    type VARCHAR(50) NOT NULL CHECK (type IN ('technical', 'behavioral', 'hr', 'final')),
+    place VARCHAR(50) NOT NULL CHECK (place IN ('phone', 'video', 'onsite')),
     scheduled_date TIMESTAMP NOT NULL,
     duration_minutes INTEGER,
     notes TEXT,
@@ -223,6 +228,7 @@ erDiagram
         uuid id PK
         uuid position_id FK
         enum type
+        enum place
         timestamp scheduled_date
         integer duration_minutes
         text notes
@@ -231,6 +237,33 @@ erDiagram
         timestamp updated_at
     }
 ```
+
+### Interview Structure Design
+
+The interview model uses a separated approach for interview characteristics:
+
+- **InterviewType**: Defines the nature/purpose of the interview
+  - `TECHNICAL`: Technical skills assessment
+  - `BEHAVIORAL`: Behavioral and cultural fit assessment  
+  - `HR`: Human resources screening and administrative discussion
+  - `FINAL`: Final decision-making interview
+
+- **InterviewPlace**: Defines the format/location of the interview
+  - `PHONE`: Traditional phone call interview
+  - `VIDEO`: Video conference interview (Zoom, Teams, etc.)
+  - `ONSITE`: In-person interview at company location
+
+This separation provides several benefits:
+1. **Flexibility**: Any interview type can be conducted in any format
+2. **Clear Data Structure**: Distinct concerns are separated
+3. **Better Analytics**: Can analyze trends by type vs. format independently
+4. **Future Extensibility**: Easy to add new types or places without affecting the other
+
+Example combinations:
+- Technical video interview
+- HR phone screening
+- Behavioral onsite interview
+- Final video interview
 
 ## Error Handling
 
