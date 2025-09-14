@@ -149,6 +149,5 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
-# Alembic
-alembic/versions/*.py
-!alembic/versions/__init__.py
+# Alembic - Allow migration files to be committed
+!alembic/versions/*.py
