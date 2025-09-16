@@ -47,15 +47,135 @@ Once the server is running, you can access:
 - Interactive API docs: `http://localhost:8000/docs`
 - ReDoc documentation: `http://localhost:8000/redoc`
 
+### Health Checks
+
+The API provides comprehensive health check endpoints for monitoring system status and database connectivity. These endpoints are designed for both manual monitoring and container orchestration platforms like Kubernetes.
+
+#### Health Check Endpoints
+
+**Basic Health Check** - `GET /health`
+- Lightweight endpoint that returns API status
+- No external dependencies checked
+- Always returns 200 OK if the API is running
+
+```bash
+curl "http://localhost:8000/health"
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T12:00:00.000000"
+}
+```
+
+**Detailed Health Check** - `GET /health/detailed`
+- Comprehensive system status including database connectivity
+- Returns overall system health and component-specific status
+- Includes database connection information and engine statistics
+
+```bash
+curl "http://localhost:8000/health/detailed"
+```
+
+**Response:**
+```json
+{
+  "api": {
+    "status": "healthy",
+    "timestamp": "2024-01-01T12:00:00.000000"
+  },
+  "database": {
+    "status": "healthy",
+    "connected": true,
+    "info": {
+      "status": "connected",
+      "url": "postgresql://***:***@localhost:5432/interview_tracker",
+      "engine_info": {
+        "pool_size": 10,
+        "checked_out": 2,
+        "overflow": 0,
+        "checked_in": 8
+      }
+    },
+    "timestamp": "2024-01-01T12:00:00.000000"
+  },
+  "overall_status": "healthy"
+}
+```
+
+**Database Health Check** - `GET /health/database`
+- Database-specific health check with detailed connectivity information
+- Returns 503 Service Unavailable if database is not accessible
+- Includes retry logic for transient connection issues
+
+```bash
+curl "http://localhost:8000/health/database"
+```
+
+**Readiness Check** - `GET /health/readiness`
+- Container orchestration readiness check
+- Returns 200 if service is ready to accept traffic, 503 otherwise
+- Checks database connectivity before marking as ready
+
+```bash
+curl "http://localhost:8000/health/readiness"
+```
+
+**Liveness Check** - `GET /health/liveness`
+- Container orchestration liveness check
+- Returns 200 if the service is alive, regardless of external dependencies
+- Used by orchestration platforms to determine if container should be restarted
+
+```bash
+curl "http://localhost:8000/health/liveness"
+```
+
+#### Health Check Features
+
+- **Retry Logic**: Database connectivity checks include configurable retry logic with exponential backoff
+- **Graceful Error Handling**: Connection failures are handled gracefully with appropriate HTTP status codes
+- **Security**: Database URLs are masked in responses to prevent credential exposure
+- **Performance Monitoring**: Engine statistics provide insights into connection pool usage
+- **Container Ready**: Designed for use with Kubernetes readiness and liveness probes
+
+#### Container Orchestration Integration
+
+For Kubernetes deployments, configure probes as follows:
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /health/liveness
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health/readiness
+    port: 8000
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
+
 ### Authentication
 
-All API endpoints (except health check) require JWT authentication. Include the token in the Authorization header:
+All API endpoints (except health checks and authentication) require JWT authentication. Include the token in the Authorization header:
 
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
 ### API Endpoints
+
+#### Health Check Endpoints
+- `GET /health` - Basic health check (lightweight, no external dependencies)
+- `GET /health/detailed` - Comprehensive system status including database connectivity
+- `GET /health/database` - Database-specific health check with detailed information
+- `GET /health/readiness` - Container orchestration readiness check
+- `GET /health/liveness` - Container orchestration liveness check
 
 #### Authentication Endpoints
 - `POST /api/v1/auth/register` - Register a new user

@@ -49,8 +49,28 @@ class SuccessResponse(BaseModel):
 
 
 class HealthCheckResponse(BaseModel):
-    """Schema for health check response."""
+    """Schema for basic health check response."""
     status: str = Field(..., description="Service status")
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Check timestamp")
-    database: str = Field(..., description="Database connection status")
-    version: str = Field(..., description="API version")
+
+
+class DatabaseInfo(BaseModel):
+    """Schema for database information."""
+    status: str = Field(..., description="Database connection status")
+    url: Optional[str] = Field(None, description="Masked database URL")
+    engine_info: Optional[Dict[str, Any]] = Field(None, description="Database engine information")
+
+
+class DetailedHealthCheckResponse(BaseModel):
+    """Schema for detailed health check response."""
+    api: Dict[str, Any] = Field(..., description="API status information")
+    database: Dict[str, Any] = Field(..., description="Database status information")
+    overall_status: str = Field(..., description="Overall system status")
+
+
+class DatabaseHealthCheckResponse(BaseModel):
+    """Schema for database health check response."""
+    status: str = Field(..., description="Database status")
+    connected: bool = Field(..., description="Database connection status")
+    database_info: DatabaseInfo = Field(..., description="Database information")
+    timestamp: str = Field(..., description="Check timestamp")

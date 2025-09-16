@@ -54,7 +54,10 @@ from .common import (
     PaginationParams,
     FilterParams,
     SuccessResponse,
-    HealthCheckResponse
+    HealthCheckResponse,
+    DatabaseInfo,
+    DetailedHealthCheckResponse,
+    DatabaseHealthCheckResponse
 )
 
 __all__ = [
@@ -99,5 +102,8 @@ __all__ = [
     "PaginationParams",
     "FilterParams",
     "SuccessResponse",
-    "HealthCheckResponse"
+    "HealthCheckResponse",
+    "DatabaseInfo",
+    "DetailedHealthCheckResponse",
+    "DatabaseHealthCheckResponse"
 ]

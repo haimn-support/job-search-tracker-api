@@ -18,10 +18,12 @@ from .core.exception_handlers import (
     generic_exception_handler
 )
 from .core.authorization import user_context_middleware
+from .core.database import initialize_database_connection
 from .api.auth import router as auth_router
 from .api.positions import router as positions_router
 from .api.interviews import router as interviews_router
 from .api.statistics import router as statistics_router
+from .api.health import router as health_router
 
 app = FastAPI(
     title="Interview Position Tracker API",
@@ -51,15 +53,36 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 # Include routers
+app.include_router(health_router)  # Health checks don't need API version prefix
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(positions_router, prefix=settings.API_V1_STR)
 app.include_router(interviews_router, prefix=settings.API_V1_STR)
 app.include_router(statistics_router, prefix=settings.API_V1_STR)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database connection on application startup."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info("Starting up Interview Position Tracker API...")
+    
+    # Initialize database connection with retry logic
+    if not initialize_database_connection():
+        logger.error("Failed to initialize database connection. Application may not function properly.")
+    else:
+        logger.info("Database connection initialized successfully")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up resources on application shutdown."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info("Shutting down Interview Position Tracker API...")
+
+
 @app.get("/")
 async def root():
     return {"message": "Interview Position Tracker API"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
