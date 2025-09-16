@@ -981,7 +981,7 @@ docker-compose down
 **Services included:**
 - **API**: FastAPI application on port 8000
 - **PostgreSQL**: Database on port 5432
-- **Redis**: Cache/session store on port 6379
+- **Redis**: Cache/session store on port 6379 *(ready for future features like caching, rate limiting, and session management)*
 - **Migration**: Automatic database migration on startup
 
 ### Docker Build
