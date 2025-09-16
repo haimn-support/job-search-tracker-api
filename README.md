@@ -957,6 +957,182 @@ This creates:
 - **Schema Definitions**: Complete data model documentation
 - **Workflow Examples**: Common usage patterns and workflows
 
+## Docker Deployment
+
+The application is fully containerized and ready for production deployment with Docker and Kubernetes.
+
+### Docker Compose (Recommended for Development)
+
+**Quick Start:**
+```bash
+# Copy environment configuration
+cp .env.docker .env
+
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f api
+
+# Stop services
+docker-compose down
+```
+
+**Services included:**
+- **API**: FastAPI application on port 8000
+- **PostgreSQL**: Database on port 5432
+- **Redis**: Cache/session store on port 6379
+- **Migration**: Automatic database migration on startup
+
+### Docker Build
+
+**Build the Docker image:**
+```bash
+# Using the build script (recommended)
+./scripts/build-docker.sh
+
+# Or manually
+docker build -t interview-tracker-api:latest .
+```
+
+**Run standalone container:**
+```bash
+docker run -p 8000:8000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
+  -e SECRET_KEY="your-secret-key" \
+  interview-tracker-api:latest
+```
+
+### Production Docker Compose
+
+For production deployment with nginx reverse proxy:
+
+```bash
+# Set production environment variables
+export POSTGRES_PASSWORD="secure-password"
+export SECRET_KEY="your-production-secret-key"
+export BACKEND_CORS_ORIGINS='["https://your-frontend.com"]'
+
+# Deploy with production overrides
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+## Kubernetes Deployment
+
+The application includes comprehensive Kubernetes manifests for production deployment.
+
+### Prerequisites
+
+- Kubernetes cluster (1.19+)
+- kubectl configured
+- Docker registry access
+- Persistent storage support
+
+### Quick Deployment
+
+```bash
+# Build and push image to your registry
+docker build -t your-registry/interview-tracker-api:latest .
+docker push your-registry/interview-tracker-api:latest
+
+# Update image reference in k8s/api-deployment.yaml
+# Then deploy
+./scripts/deploy-k8s.sh
+```
+
+### Manual Kubernetes Deployment
+
+```bash
+# Create namespace and configuration
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
+
+# Deploy database and cache
+kubectl apply -f k8s/postgresql.yaml
+kubectl apply -f k8s/redis.yaml
+
+# Wait for database to be ready
+kubectl wait --for=condition=available --timeout=300s deployment/postgresql -n interview-tracker
+
+# Run database migration
+kubectl apply -f k8s/migration-job.yaml
+kubectl wait --for=condition=complete --timeout=300s job/interview-tracker-migration -n interview-tracker
+
+# Deploy API
+kubectl apply -f k8s/api-deployment.yaml
+kubectl apply -f k8s/api-service.yaml
+
+# Deploy autoscaling
+kubectl apply -f k8s/hpa.yaml
+```
+
+### Kubernetes Features
+
+- **High Availability**: 3 API replicas with rolling updates
+- **Auto Scaling**: HPA based on CPU/memory usage (2-10 replicas)
+- **Health Checks**: Comprehensive liveness, readiness, and startup probes
+- **Security**: Non-root containers, security contexts, resource limits
+- **Persistent Storage**: PostgreSQL and Redis data persistence
+- **Ingress**: External access with rate limiting and CORS
+- **Monitoring**: Ready for Prometheus metrics collection
+
+### Kubernetes Configuration
+
+**Update secrets (base64 encoded):**
+```bash
+# Encode your secrets
+echo -n "your-secret-key" | base64
+echo -n "your-db-password" | base64
+
+# Update k8s/secret.yaml with encoded values
+```
+
+**Configure ingress:**
+```bash
+# Update k8s/api-service.yaml with your domain
+# Configure TLS certificates if using HTTPS
+```
+
+### Deployment Management
+
+```bash
+# Check deployment status
+./scripts/deploy-k8s.sh status
+
+# View logs
+./scripts/deploy-k8s.sh logs
+
+# Scale deployment
+kubectl scale deployment interview-tracker-api --replicas=5 -n interview-tracker
+
+# Update deployment
+kubectl set image deployment/interview-tracker-api api=your-registry/interview-tracker-api:v2.0.0 -n interview-tracker
+
+# Cleanup
+./scripts/deploy-k8s.sh cleanup
+```
+
+## Container Features
+
+### Security
+- **Non-root user**: Containers run as unprivileged user (UID 1000)
+- **Minimal base image**: Python slim image with only required dependencies
+- **Security scanning**: Trivy integration for vulnerability scanning
+- **Read-only filesystem**: Configurable for enhanced security
+
+### Performance
+- **Multi-stage build**: Optimized image size and build caching
+- **Health checks**: Built-in health endpoints for container orchestration
+- **Resource limits**: Configured CPU and memory limits
+- **Connection pooling**: Optimized database connections
+
+### Monitoring & Observability
+- **Health endpoints**: `/health`, `/health/readiness`, `/health/liveness`
+- **Structured logging**: JSON logs for centralized logging
+- **Metrics ready**: Prometheus metrics endpoints available
+- **Distributed tracing**: OpenTelemetry compatible
+
 ## Project Structure
 
 ```
@@ -971,7 +1147,30 @@ This creates:
 │   └── services/            # Business logic layer
 ├── alembic/                 # Database migration files
 ├── tests/                   # Test files
-├── requirements.txt         # Python dependencies
-├── .env.example            # Environment variables template
-└── README.md               # This file
+├── scripts/                 # Deployment and utility scripts
+│   ├── build-docker.sh      # Docker build script
+│   ├── deploy-k8s.sh        # Kubernetes deployment script
+│   ├── run_tests.py         # Comprehensive test runner
+│   └── generate_docs.py     # API documentation generator
+├── k8s/                     # Kubernetes manifests
+│   ├── namespace.yaml       # Namespace definition
+│   ├── configmap.yaml       # Configuration
+│   ├── secret.yaml          # Secrets
+│   ├── postgresql.yaml      # Database deployment
+│   ├── redis.yaml           # Cache deployment
+│   ├── api-deployment.yaml  # API deployment
+│   ├── api-service.yaml     # API service and ingress
+│   ├── migration-job.yaml   # Database migration job
+│   └── hpa.yaml            # Horizontal Pod Autoscaler
+├── nginx/                   # Nginx configuration
+│   └── nginx.conf          # Production reverse proxy config
+├── docs/                    # Generated API documentation
+├── Dockerfile              # Multi-stage container build
+├── docker-compose.yml      # Development environment
+├── docker-compose.prod.yml # Production overrides
+├── .dockerignore           # Docker build exclusions
+├── .env.docker            # Docker environment template
+├── requirements.txt        # Python dependencies
+├── .env.example           # Environment variables template
+└── README.md              # This file
 ```

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: interview-tracker-config
+  namespace: interview-tracker
+  labels:
+    app: interview-position-tracker
+data:
+  # Application configuration
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  TESTING: "false"
+  LOG_LEVEL: "INFO"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  ALGORITHM: "HS256"
+  HEALTH_CHECK_ENABLED: "true"
+  
+  # CORS configuration
+  BACKEND_CORS_ORIGINS: '["https://your-frontend-domain.com"]'
+  
+  # Database configuration (non-sensitive)
+  POSTGRES_DB: "interview_tracker"
+  POSTGRES_USER: "postgres"
