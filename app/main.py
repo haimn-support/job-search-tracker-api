@@ -1,9 +1,22 @@
 """
 Main FastAPI application entry point.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from sqlalchemy.exc import SQLAlchemyError
+from pydantic import ValidationError
+
 from .core.config import settings
+from .core.exceptions import BaseAPIException
+from .core.exception_handlers import (
+    base_api_exception_handler,
+    http_exception_handler,
+    validation_exception_handler,
+    pydantic_validation_exception_handler,
+    sqlalchemy_exception_handler,
+    generic_exception_handler
+)
 from .api.auth import router as auth_router
 from .api.positions import router as positions_router
 from .api.interviews import router as interviews_router
@@ -14,6 +27,14 @@ app = FastAPI(
     description="A REST API for tracking job positions and interview progress",
     version="1.0.0"
 )
+
+# Register exception handlers
+app.add_exception_handler(BaseAPIException, base_api_exception_handler)
+app.add_exception_handler(HTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(ValidationError, pydantic_validation_exception_handler)
+app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
+app.add_exception_handler(Exception, generic_exception_handler)
 
 # Add CORS middleware
 if settings.BACKEND_CORS_ORIGINS:

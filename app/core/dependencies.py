@@ -3,11 +3,12 @@ FastAPI dependencies for authentication and database access.
 """
 from typing import Optional
 from uuid import UUID
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from .database import get_db
 from .auth import get_user_id_from_token
+from .exceptions import AuthenticationException, ResourceNotFoundException
 from ..models.user import User
 
 
@@ -28,23 +29,17 @@ async def get_current_user_id(
         The authenticated user's UUID
         
     Raises:
-        HTTPException: If token is invalid or user ID cannot be extracted
+        AuthenticationException: If token is invalid or user ID cannot be extracted
     """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
     try:
         user_id_str = get_user_id_from_token(credentials.credentials)
         if user_id_str is None:
-            raise credentials_exception
+            raise AuthenticationException(detail="Could not validate credentials")
         
         user_id = UUID(user_id_str)
         return user_id
     except (ValueError, TypeError):
-        raise credentials_exception
+        raise AuthenticationException(detail="Could not validate credentials")
 
 
 async def get_current_user(
@@ -62,15 +57,11 @@ async def get_current_user(
         The authenticated User object
         
     Raises:
-        HTTPException: If user is not found in database
+        AuthenticationException: If user is not found in database
     """
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise AuthenticationException(detail="User not found")
     return user
 
 

@@ -4,10 +4,11 @@ Position management API endpoints.
 from typing import List, Optional
 from uuid import UUID
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from ..core.database import get_db
 from ..core.dependencies import get_current_user_id
+from ..core.exceptions import ResourceNotFoundException, DatabaseException, ValidationException
 from ..repositories.position_repository import PositionRepository
 from ..schemas.position import (
     PositionCreate,
@@ -27,7 +28,7 @@ def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository
     return PositionRepository(db)
 
 
-@router.post("/", response_model=PositionResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=PositionResponse, status_code=201)
 async def create_position(
     position_data: PositionCreate,
     current_user_id: UUID = Depends(get_current_user_id),
@@ -42,9 +43,9 @@ async def create_position(
         position = position_repo.create(current_user_id, position_data)
         return PositionResponse.model_validate(position)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create position: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to create position",
+            operation="position_creation"
         )
 
 
@@ -99,9 +100,9 @@ async def list_positions(
             has_prev=has_prev
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to retrieve positions: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to retrieve positions",
+            operation="position_listing"
         )
 
 
@@ -118,9 +119,9 @@ async def get_position(
     """
     position = position_repo.get_by_id(position_id, current_user_id)
     if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )
     
     return PositionResponse.model_validate(position)
@@ -141,9 +142,9 @@ async def update_position(
     """
     position = position_repo.update(position_id, current_user_id, position_data)
     if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )
     
     return PositionResponse.model_validate(position)
@@ -164,15 +165,15 @@ async def update_position_status(
     """
     position = position_repo.update_status(position_id, current_user_id, status_data.status)
     if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )
     
     return PositionResponse.model_validate(position)
 
 
-@router.delete("/{position_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{position_id}", status_code=204)
 async def delete_position(
     position_id: UUID,
     current_user_id: UUID = Depends(get_current_user_id),
@@ -185,7 +186,7 @@ async def delete_position(
     """
     success = position_repo.delete(position_id, current_user_id)
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )

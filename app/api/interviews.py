@@ -3,10 +3,11 @@ Interview management API endpoints.
 """
 from typing import List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..core.database import get_db
 from ..core.dependencies import get_current_user_id
+from ..core.exceptions import ResourceNotFoundException, DatabaseException
 from ..repositories.interview_repository import InterviewRepository
 from ..repositories.position_repository import PositionRepository
 from ..schemas.interview import (
@@ -35,7 +36,46 @@ def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository
     return PositionRepository(db)
 
 
-@router.post("/positions/{position_id}/interviews", response_model=InterviewResponse, status_code=status.HTTP_201_CREATED)
+def verify_interview_ownership(
+    interview_id: UUID,
+    current_user_id: UUID,
+    interview_repo: InterviewRepository,
+    position_repo: PositionRepository
+):
+    """
+    Verify that an interview exists and belongs to the current user.
+    
+    Args:
+        interview_id: The interview ID to verify
+        current_user_id: The current user's ID
+        interview_repo: Interview repository instance
+        position_repo: Position repository instance
+        
+    Returns:
+        The interview object if it exists and belongs to the user
+        
+    Raises:
+        ResourceNotFoundException: If interview not found or doesn't belong to user
+    """
+    interview = interview_repo.get_by_id(interview_id)
+    if not interview:
+        raise ResourceNotFoundException(
+            resource_type="Interview",
+            resource_id=str(interview_id)
+        )
+    
+    # Verify the interview's position belongs to the user
+    position = position_repo.get_by_id(interview.position_id, current_user_id)
+    if not position:
+        raise ResourceNotFoundException(
+            resource_type="Interview",
+            resource_id=str(interview_id)
+        )
+    
+    return interview
+
+
+@router.post("/positions/{position_id}/interviews", response_model=InterviewResponse, status_code=201)
 async def create_interview(
     position_id: UUID,
     interview_data: InterviewCreate,
@@ -51,18 +91,18 @@ async def create_interview(
     # Verify position exists and belongs to user
     position = position_repo.get_by_id(position_id, current_user_id)
     if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )
     
     try:
         interview = interview_repo.create(position_id, interview_data)
         return InterviewResponse.model_validate(interview)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to create interview: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to create interview",
+            operation="interview_creation"
         )
 
 
@@ -82,9 +122,9 @@ async def list_interviews(
     # Verify position exists and belongs to user
     position = position_repo.get_by_id(position_id, current_user_id)
     if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Position not found"
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
         )
     
     try:
@@ -94,9 +134,9 @@ async def list_interviews(
             total=len(interviews)
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to retrieve interviews: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to retrieve interviews",
+            operation="interview_listing"
         )
 
 
@@ -112,21 +152,9 @@ async def get_interview(
     
     Returns the interview details if it exists and its associated position belongs to the authenticated user.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
+    interview = verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     return InterviewResponse.model_validate(interview)
 
 
@@ -144,38 +172,28 @@ async def update_interview(
     Updates the interview with the provided data if it exists and its associated position belongs to the authenticated user.
     Only provided fields will be updated.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
+    # Verify interview exists and belongs to user
+    verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     
     try:
         updated_interview = interview_repo.update(interview_id, interview_data)
         if not updated_interview:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Interview not found"
+            raise ResourceNotFoundException(
+                resource_type="Interview",
+                resource_id=str(interview_id)
             )
         
         return InterviewResponse.model_validate(updated_interview)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update interview: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to update interview",
+            operation="interview_update"
         )
 
 
-@router.delete("/interviews/{interview_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/interviews/{interview_id}", status_code=204)
 async def delete_interview(
     interview_id: UUID,
     current_user_id: UUID = Depends(get_current_user_id),
@@ -187,26 +205,16 @@ async def delete_interview(
     
     Deletes the interview if it exists and its associated position belongs to the authenticated user.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
+    # Verify interview exists and belongs to user
+    verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     
     success = interview_repo.delete(interview_id)
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
+        raise ResourceNotFoundException(
+            resource_type="Interview",
+            resource_id=str(interview_id)
         )
 
 
@@ -223,36 +231,26 @@ async def update_interview_schedule(
     
     Updates only the scheduled date of the interview if it exists and its associated position belongs to the authenticated user.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
+    # Verify interview exists and belongs to user
+    verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     
     try:
         # Create an InterviewUpdate with only the scheduled_date
         update_data = InterviewUpdate(scheduled_date=schedule_data.scheduled_date)
         updated_interview = interview_repo.update(interview_id, update_data)
         if not updated_interview:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Interview not found"
+            raise ResourceNotFoundException(
+                resource_type="Interview",
+                resource_id=str(interview_id)
             )
         
         return InterviewResponse.model_validate(updated_interview)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update interview schedule: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to update interview schedule",
+            operation="interview_schedule_update"
         )
 
 
@@ -269,36 +267,26 @@ async def update_interview_notes(
     
     Updates only the notes of the interview if it exists and its associated position belongs to the authenticated user.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
+    # Verify interview exists and belongs to user
+    verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     
     try:
         # Create an InterviewUpdate with only the notes
         update_data = InterviewUpdate(notes=notes_data.notes)
         updated_interview = interview_repo.update(interview_id, update_data)
         if not updated_interview:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Interview not found"
+            raise ResourceNotFoundException(
+                resource_type="Interview",
+                resource_id=str(interview_id)
             )
         
         return InterviewResponse.model_validate(updated_interview)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update interview notes: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to update interview notes",
+            operation="interview_notes_update"
         )
 
 
@@ -316,29 +304,19 @@ async def update_interview_outcome(
     Updates only the outcome of the interview if it exists and its associated position belongs to the authenticated user.
     If the outcome is 'failed', the associated position status will be updated to 'rejected'.
     """
-    interview = interview_repo.get_by_id(interview_id)
-    if not interview:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
-    
-    # Verify the interview's position belongs to the user
-    position = position_repo.get_by_id(interview.position_id, current_user_id)
-    if not position:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Interview not found"
-        )
+    # Verify interview exists and belongs to user
+    interview = verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
     
     try:
         # Create an InterviewUpdate with only the outcome
         update_data = InterviewUpdate(outcome=outcome_data.outcome)
         updated_interview = interview_repo.update(interview_id, update_data)
         if not updated_interview:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Interview not found"
+            raise ResourceNotFoundException(
+                resource_type="Interview",
+                resource_id=str(interview_id)
             )
         
         # If outcome is failed, update position status to rejected
@@ -347,7 +325,7 @@ async def update_interview_outcome(
         
         return InterviewResponse.model_validate(updated_interview)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Failed to update interview outcome: {str(e)}"
+        raise DatabaseException(
+            detail="Failed to update interview outcome",
+            operation="interview_outcome_update"
         )

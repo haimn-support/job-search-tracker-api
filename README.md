@@ -388,6 +388,208 @@ curl "http://localhost:8000/api/v1/statistics/timeline?status=interviewing" \
   -H "Authorization: Bearer <token>"
 ```
 
+## Error Handling
+
+The API implements comprehensive error handling with standardized error responses and user-friendly messages.
+
+### Error Response Format
+
+All errors follow a consistent JSON structure:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "details": {
+      "additional": "context information"
+    },
+    "field_errors": {
+      "field_name": "Field-specific error message"
+    }
+  }
+}
+```
+
+### Error Types and HTTP Status Codes
+
+#### 400 Bad Request - Business Logic Errors
+```json
+{
+  "error": {
+    "code": "BUSINESS_LOGIC_ERROR",
+    "message": "Cannot delete position with active interviews",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+#### 401 Unauthorized - Authentication Errors
+```json
+{
+  "error": {
+    "code": "AUTHENTICATION_ERROR",
+    "message": "Could not validate credentials",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+#### 403 Forbidden - Authorization Errors
+```json
+{
+  "error": {
+    "code": "AUTHORIZATION_ERROR",
+    "message": "Access denied",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+#### 404 Not Found - Resource Not Found
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "Position with ID '123e4567-e89b-12d3-a456-426614174000' not found",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "details": {
+      "resource_type": "Position",
+      "resource_id": "123e4567-e89b-12d3-a456-426614174000"
+    }
+  }
+}
+```
+
+#### 409 Conflict - Resource Conflicts
+```json
+{
+  "error": {
+    "code": "RESOURCE_CONFLICT",
+    "message": "Email already registered",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "details": {
+      "resource_type": "User"
+    }
+  }
+}
+```
+
+#### 422 Unprocessable Entity - Validation Errors
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "field_errors": {
+      "email": "Must be a valid email address",
+      "password": "Must be at least 8 characters",
+      "first_name": "This field is required"
+    }
+  }
+}
+```
+
+#### 429 Too Many Requests - Rate Limiting
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_ERROR",
+    "message": "Rate limit exceeded",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "details": {
+      "retry_after": 60
+    }
+  }
+}
+```
+
+#### 500 Internal Server Error - Database/System Errors
+```json
+{
+  "error": {
+    "code": "DATABASE_ERROR",
+    "message": "A database error occurred",
+    "timestamp": "2024-01-01T12:00:00Z"
+  }
+}
+```
+
+#### 503 Service Unavailable - External Service Errors
+```json
+{
+  "error": {
+    "code": "EXTERNAL_SERVICE_ERROR",
+    "message": "External service unavailable",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "details": {
+      "service_name": "EmailService"
+    }
+  }
+}
+```
+
+### Field Validation Examples
+
+The API provides detailed field-level validation with user-friendly messages:
+
+**Invalid email format:**
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "invalid-email",
+    "password": "123",
+    "first_name": "",
+    "last_name": "Test"
+  }'
+```
+
+**Response:**
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "field_errors": {
+      "email": "Must be a valid email address",
+      "password": "Must be at least 8 characters",
+      "first_name": "This field is required"
+    }
+  }
+}
+```
+
+**Invalid UUID in path parameter:**
+```bash
+curl "http://localhost:8000/api/v1/positions/invalid-uuid" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response:**
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Request validation failed",
+    "timestamp": "2024-01-01T12:00:00Z",
+    "field_errors": {
+      "position_id": "Must be a valid UUID"
+    }
+  }
+}
+```
+
+### Security Features
+
+- **No Information Leakage**: Error messages are designed to be informative without exposing sensitive system details
+- **Consistent Authentication Errors**: Authentication failures return generic messages to prevent user enumeration
+- **Safe Database Error Handling**: Database errors are caught and returned as generic server errors
+- **Request Validation**: All input is validated before processing to prevent injection attacks
+
 ## Features
 
 ### Interview Stage Tracking
@@ -411,6 +613,14 @@ curl "http://localhost:8000/api/v1/statistics/timeline?status=interviewing" \
 - **Company Insights**: Analyze performance and success rates by company
 - **Flexible Filtering**: Apply date range, company, and status filters to all statistics
 - **Performance Tracking**: Average response times and decision timelines
+
+### Comprehensive Error Handling
+- **Standardized Error Responses**: Consistent JSON error format across all endpoints
+- **Custom Exception Classes**: Specific exceptions for different error types (validation, authentication, database, etc.)
+- **User-Friendly Messages**: Clear, informative error messages without exposing sensitive information
+- **Field-Specific Validation**: Detailed validation errors with field-level feedback
+- **Global Exception Handling**: Centralized error handling with proper HTTP status codes
+- **Security-Conscious**: Error messages designed to prevent information leakage
 
 ## Testing
 

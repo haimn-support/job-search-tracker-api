@@ -5,9 +5,9 @@ from datetime import timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from fastapi import HTTPException, status
 from ..core.auth import verify_password, get_password_hash, create_access_token
 from ..core.config import settings
+from ..core.exceptions import ConflictException, AuthenticationException, DatabaseException
 from ..models.user import User
 from ..schemas.user import UserCreate, UserLogin, TokenResponse
 
@@ -29,14 +29,15 @@ class AuthService:
             The created User object
             
         Raises:
-            HTTPException: If email already exists or registration fails
+            ConflictException: If email already exists
+            DatabaseException: If registration fails due to database error
         """
         # Check if user already exists
         existing_user = self.db.query(User).filter(User.email == user_data.email).first()
         if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
+            raise ConflictException(
+                detail="Email already registered",
+                resource_type="user"
             )
         
         # Hash the password
@@ -57,9 +58,15 @@ class AuthService:
             return db_user
         except IntegrityError:
             self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
+            raise ConflictException(
+                detail="Email already registered",
+                resource_type="user"
+            )
+        except Exception as e:
+            self.db.rollback()
+            raise DatabaseException(
+                detail="Failed to create user account",
+                operation="user_registration"
             )
     
     def authenticate_user(self, login_data: UserLogin) -> Optional[User]:
@@ -114,14 +121,12 @@ class AuthService:
             Token response with access token
             
         Raises:
-            HTTPException: If credentials are invalid
+            AuthenticationException: If credentials are invalid
         """
         user = self.authenticate_user(login_data)
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password",
-                headers={"WWW-Authenticate": "Bearer"},
+            raise AuthenticationException(
+                detail="Incorrect email or password"
             )
         
         return self.create_access_token_for_user(user)
