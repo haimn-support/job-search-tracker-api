@@ -590,6 +590,98 @@ curl "http://localhost:8000/api/v1/positions/invalid-uuid" \
 - **Safe Database Error Handling**: Database errors are caught and returned as generic server errors
 - **Request Validation**: All input is validated before processing to prevent injection attacks
 
+## Authorization & Data Isolation
+
+The API implements comprehensive authorization and data isolation to ensure users can only access their own data.
+
+### User Context System
+
+- **Automatic User Context Injection**: Middleware automatically extracts user information from JWT tokens and injects it into the request lifecycle
+- **Centralized Authorization Service**: `AuthorizationService` provides consistent authorization checks across all endpoints
+- **User Context Dependencies**: FastAPI dependencies automatically provide user context to endpoint handlers
+
+### Data Isolation Features
+
+#### User-Specific Data Filtering
+- **Repository-Level Filtering**: All database queries automatically filter by user ID to ensure data isolation
+- **Ownership Verification**: Every resource access is verified to ensure the user owns the requested resource
+- **Cross-User Access Prevention**: Users cannot access positions, interviews, or statistics belonging to other users
+
+#### Authorization Middleware
+- **JWT Token Processing**: Middleware automatically processes JWT tokens and extracts user information
+- **Request State Management**: User context is stored in request state for access throughout the request lifecycle
+- **Graceful Error Handling**: Invalid or missing tokens are handled gracefully without breaking the application
+
+#### Protected Endpoints
+All API endpoints (except authentication and health check) require valid JWT authentication:
+
+```bash
+# All requests must include Authorization header
+curl -H "Authorization: Bearer <your-jwt-token>" \
+  "http://localhost:8000/api/v1/positions/"
+```
+
+#### Authorization Verification Examples
+
+**Accessing another user's position (returns 404):**
+```bash
+curl "http://localhost:8000/api/v1/positions/other-user-position-id" \
+  -H "Authorization: Bearer <your-token>"
+# Response: 404 Not Found - Position not found
+```
+
+**Accessing without authentication (returns 403):**
+```bash
+curl "http://localhost:8000/api/v1/positions/"
+# Response: 403 Forbidden - Not authenticated
+```
+
+**Invalid token (returns 401):**
+```bash
+curl "http://localhost:8000/api/v1/positions/" \
+  -H "Authorization: Bearer invalid-token"
+# Response: 401 Unauthorized - Could not validate credentials
+```
+
+### Authorization Components
+
+#### UserContext Class
+Holds user information throughout the request lifecycle:
+```python
+class UserContext:
+    def __init__(self, user_id: UUID, user: Optional[User] = None):
+        self.user_id = user_id
+        self.user = user
+```
+
+#### Authorization Service
+Provides centralized authorization logic:
+- `can_access_position(position_id, user_id)` - Check if user can access a position
+- `can_access_interview(interview_id, user_id)` - Check if user can access an interview
+- `get_user_position(position_id, user_id)` - Get position if owned by user
+- `get_user_interview(interview_id, user_id)` - Get interview if owned by user
+
+#### Verification Functions
+- `verify_position_ownership(position, user_context)` - Verify position belongs to user
+- `verify_interview_ownership(interview, position, user_context)` - Verify interview belongs to user
+
+### Data Isolation Testing
+
+The system includes comprehensive tests to verify data isolation:
+
+- **Cross-User Access Tests**: Verify users cannot access other users' data
+- **Unauthorized Access Tests**: Verify proper rejection of unauthenticated requests
+- **Edge Case Tests**: Test invalid tokens, malformed requests, and missing resources
+- **Integration Tests**: End-to-end testing of authorization flows
+
+### Security Best Practices
+
+- **Principle of Least Privilege**: Users can only access their own resources
+- **Defense in Depth**: Multiple layers of authorization checks (middleware, dependencies, repository)
+- **Secure by Default**: All endpoints require authentication unless explicitly made public
+- **Consistent Error Handling**: Authorization errors return consistent, non-revealing error messages
+- **Token Validation**: JWT tokens are validated on every request with proper error handling
+
 ## Features
 
 ### Interview Stage Tracking

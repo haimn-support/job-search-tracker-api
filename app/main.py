@@ -17,6 +17,7 @@ from .core.exception_handlers import (
     sqlalchemy_exception_handler,
     generic_exception_handler
 )
+from .core.authorization import user_context_middleware
 from .api.auth import router as auth_router
 from .api.positions import router as positions_router
 from .api.interviews import router as interviews_router
@@ -35,6 +36,9 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(ValidationError, pydantic_validation_exception_handler)
 app.add_exception_handler(SQLAlchemyError, sqlalchemy_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
+
+# Add user context middleware
+app.middleware("http")(user_context_middleware)
 
 # Add CORS middleware
 if settings.BACKEND_CORS_ORIGINS:
