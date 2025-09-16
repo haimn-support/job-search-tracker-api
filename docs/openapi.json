@@ -1,0 +1,2719 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Interview Position Tracker API",
+    "description": "\n    A comprehensive REST API for tracking job positions and interview progress.\n    \n    ## Features\n    \n    * **User Authentication**: Secure JWT-based authentication system\n    * **Position Management**: Create, read, update, and delete job positions\n    * **Interview Tracking**: Track multiple interview stages for each position\n    * **Statistics & Analytics**: Get insights into your job search progress\n    * **Data Filtering**: Filter positions by status, company, date range, and more\n    * **Secure Access**: User-specific data isolation and authorization\n    \n    ## Authentication\n    \n    Most endpoints require authentication. To authenticate:\n    \n    1. Register a new account using `/api/v1/auth/register`\n    2. Login using `/api/v1/auth/login` to get an access token\n    3. Include the token in the Authorization header: `Bearer <your_token>`\n    \n    ## Workflow\n    \n    1. **Register/Login** to get authenticated\n    2. **Create positions** for jobs you're applying to\n    3. **Add interviews** as you progress through hiring processes\n    4. **Update statuses** as your applications move forward\n    5. **View statistics** to analyze your job search performance\n    ",
+    "contact": {
+      "name": "Interview Position Tracker API",
+      "url": "https://github.com/your-repo/interview-tracker"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Basic Health Check",
+        "description": "Basic health check endpoint that returns API status.\nThis endpoint is lightweight and doesn't check external dependencies.",
+        "operationId": "basic_health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/detailed": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Detailed Health Check",
+        "description": "Detailed health check that includes database connectivity and system status.\nReturns comprehensive information about all system components.",
+        "operationId": "detailed_health_check_health_detailed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/database": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Database Health Check",
+        "description": "Database-specific health check endpoint.\nReturns detailed database connectivity and performance information.",
+        "operationId": "database_health_check_health_database_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/readiness": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Readiness Check",
+        "description": "Readiness check endpoint for container orchestration.\nReturns 200 if the service is ready to accept traffic, 503 otherwise.",
+        "operationId": "readiness_check_health_readiness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/liveness": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Liveness Check",
+        "description": "Liveness check endpoint for container orchestration.\nReturns 200 if the service is alive, regardless of external dependencies.",
+        "operationId": "liveness_check_health_liveness_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a new user account",
+        "description": "Create a new user account with email and password. Email must be unique.",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "email": "user@example.com",
+                  "first_name": "John",
+                  "last_name": "Doe",
+                  "created_at": "2024-01-15T10:30:00Z",
+                  "updated_at": "2024-01-15T10:30:00Z"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "EMAIL_ALREADY_EXISTS",
+                    "message": "A user with this email already exists",
+                    "details": "Please use a different email address or try logging in",
+                    "timestamp": "2024-01-15T10:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": [
+                    {
+                      "loc": [
+                        "body",
+                        "email"
+                      ],
+                      "msg": "field required",
+                      "type": "value_error.missing"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Authenticate user and get access token",
+        "description": "Login with email and password to receive a JWT access token for API authentication.",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                },
+                "example": {
+                  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "token_type": "bearer",
+                  "expires_in": 3600
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": {
+                    "code": "INVALID_CREDENTIALS",
+                    "message": "Invalid email or password",
+                    "details": "Please check your credentials and try again",
+                    "timestamp": "2024-01-15T10:30:00Z"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get Current User Info",
+        "description": "Get current authenticated user information.\n\nArgs:\n    current_user: The authenticated user from JWT token\n    \nReturns:\n    Current user information",
+        "operationId": "get_current_user_info_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Refresh Token",
+        "description": "Refresh the access token for the current user.\n\nArgs:\n    current_user: The authenticated user from JWT token\n    db: Database session\n    \nReturns:\n    New JWT access token and metadata",
+        "operationId": "refresh_token_api_v1_auth_refresh_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/positions/": {
+      "post": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Create a new job position",
+        "description": "Create a new job position to track in your application process.",
+        "operationId": "create_position_api_v1_positions__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Position successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "title": "Senior Software Engineer",
+                  "company": "TechCorp",
+                  "description": "Full-stack development with React and Python",
+                  "location": "San Francisco, CA",
+                  "salary_range": "$120k - $180k",
+                  "status": "applied",
+                  "application_date": "2024-01-15",
+                  "created_at": "2024-01-15T10:30:00Z",
+                  "updated_at": "2024-01-15T10:30:00Z",
+                  "interviews": []
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "List Positions",
+        "description": "List all positions for the authenticated user.\n\nSupports filtering by status, company, date range, and search terms.\nResults are paginated and can be sorted by various fields.",
+        "operationId": "list_positions_api_v1_positions__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PositionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by position status",
+              "title": "Status"
+            },
+            "description": "Filter by position status"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by company name (partial match)",
+              "title": "Company"
+            },
+            "description": "Filter by company name (partial match)"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter positions from this application date",
+              "title": "Date From"
+            },
+            "description": "Filter positions from this application date"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter positions up to this application date",
+              "title": "Date To"
+            },
+            "description": "Filter positions up to this application date"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search in title, company, or description",
+              "title": "Search"
+            },
+            "description": "Search in title, company, or description"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Field to sort by",
+              "default": "application_date",
+              "title": "Sort By"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(asc|desc)$",
+              "description": "Sort order: asc or desc",
+              "default": "desc",
+              "title": "Sort Order"
+            },
+            "description": "Sort order: asc or desc"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number (1-based)",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "Page number (1-based)"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Number of items per page",
+              "default": 20,
+              "title": "Per Page"
+            },
+            "description": "Number of items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{position_id}": {
+      "get": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Get Position",
+        "description": "Get a specific position by ID.\n\nReturns the position details if it exists and belongs to the authenticated user.",
+        "operationId": "get_position_api_v1_positions__position_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Update Position",
+        "description": "Update a specific position.\n\nUpdates the position with the provided data if it exists and belongs to the authenticated user.\nOnly provided fields will be updated.",
+        "operationId": "update_position_api_v1_positions__position_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Delete Position",
+        "description": "Delete a specific position.\n\nDeletes the position and all associated interview records if it exists and belongs to the authenticated user.",
+        "operationId": "delete_position_api_v1_positions__position_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{position_id}/status": {
+      "put": {
+        "tags": [
+          "Positions"
+        ],
+        "summary": "Update Position Status",
+        "description": "Update the status of a specific position.\n\nUpdates only the status field of the position if it exists and belongs to the authenticated user.\nThis is a convenient endpoint for quick status updates without needing to send all position data.",
+        "operationId": "update_position_status_api_v1_positions__position_id__status_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PositionStatusUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PositionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{position_id}/interviews": {
+      "post": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Create Interview",
+        "description": "Create a new interview for a position.\n\nCreates a new interview record for the specified position if it exists and belongs to the authenticated user.",
+        "operationId": "create_interview_api_v1_positions__position_id__interviews_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "List Interviews",
+        "description": "List all interviews for a position.\n\nReturns all interview records for the specified position if it exists and belongs to the authenticated user.\nInterviews are ordered by scheduled date.",
+        "operationId": "list_interviews_api_v1_positions__position_id__interviews_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "position_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Position Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interviews/{interview_id}": {
+      "get": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Get Interview",
+        "description": "Get a specific interview by ID.\n\nReturns the interview details if it exists and its associated position belongs to the authenticated user.",
+        "operationId": "get_interview_api_v1_interviews__interview_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Update Interview",
+        "description": "Update a specific interview.\n\nUpdates the interview with the provided data if it exists and its associated position belongs to the authenticated user.\nOnly provided fields will be updated.",
+        "operationId": "update_interview_api_v1_interviews__interview_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Delete Interview",
+        "description": "Delete a specific interview.\n\nDeletes the interview if it exists and its associated position belongs to the authenticated user.",
+        "operationId": "delete_interview_api_v1_interviews__interview_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interviews/{interview_id}/schedule": {
+      "put": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Update Interview Schedule",
+        "description": "Update the scheduled date of a specific interview.\n\nUpdates only the scheduled date of the interview if it exists and its associated position belongs to the authenticated user.",
+        "operationId": "update_interview_schedule_api_v1_interviews__interview_id__schedule_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewScheduleUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interviews/{interview_id}/notes": {
+      "put": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Update Interview Notes",
+        "description": "Update the notes of a specific interview.\n\nUpdates only the notes of the interview if it exists and its associated position belongs to the authenticated user.",
+        "operationId": "update_interview_notes_api_v1_interviews__interview_id__notes_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewNotesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interviews/{interview_id}/outcome": {
+      "put": {
+        "tags": [
+          "Interviews"
+        ],
+        "summary": "Update Interview Outcome",
+        "description": "Update the outcome of a specific interview.\n\nUpdates only the outcome of the interview if it exists and its associated position belongs to the authenticated user.\nIf the outcome is 'failed', the associated position status will be updated to 'rejected'.",
+        "operationId": "update_interview_outcome_api_v1_interviews__interview_id__outcome_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "interview_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Interview Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewOutcomeUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/statistics/overview": {
+      "get": {
+        "tags": [
+          "Statistics"
+        ],
+        "summary": "Get Overview Statistics",
+        "description": "Get overview statistics for the current user's job applications.\n\nThis endpoint provides comprehensive metrics including:\n- Total applications, companies, and interviews\n- Response rate, interview rate, and offer rate\n- Breakdowns by status, interview type, and interview outcome\n\nOptional filters can be applied to focus on specific time periods,\ncompanies, or application statuses.",
+        "operationId": "get_overview_statistics_api_v1_statistics_overview_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter start date",
+              "title": "Start Date"
+            },
+            "description": "Filter start date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter end date",
+              "title": "End Date"
+            },
+            "description": "Filter end date"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by company name",
+              "title": "Company"
+            },
+            "description": "Filter by company name"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PositionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by position status",
+              "title": "Status"
+            },
+            "description": "Filter by position status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsOverview"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/statistics/timeline": {
+      "get": {
+        "tags": [
+          "Statistics"
+        ],
+        "summary": "Get Timeline Statistics",
+        "description": "Get timeline-based statistics for the current user's job applications.\n\nThis endpoint provides time-based metrics including:\n- Applications and interviews per month\n- Average response time from application to first interview\n- Average time from interview to final decision\n\nIf no date range is specified, the endpoint will use the full range\nof the user's application dates.",
+        "operationId": "get_timeline_statistics_api_v1_statistics_timeline_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter start date",
+              "title": "Start Date"
+            },
+            "description": "Filter start date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter end date",
+              "title": "End Date"
+            },
+            "description": "Filter end date"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by company name",
+              "title": "Company"
+            },
+            "description": "Filter by company name"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PositionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by position status",
+              "title": "Status"
+            },
+            "description": "Filter by position status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineStatistics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/statistics/companies": {
+      "get": {
+        "tags": [
+          "Statistics"
+        ],
+        "summary": "Get Company Statistics",
+        "description": "Get company-based statistics for the current user's job applications.\n\nThis endpoint provides per-company metrics including:\n- Total applications and interviews per company\n- Latest application date for each company\n- Status breakdown for each company\n- Success rate (offers/applications) for each company\n\nCompanies are sorted by total applications in descending order.",
+        "operationId": "get_company_statistics_api_v1_statistics_companies_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter start date",
+              "title": "Start Date"
+            },
+            "description": "Filter start date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter end date",
+              "title": "End Date"
+            },
+            "description": "Filter end date"
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by company name",
+              "title": "Company"
+            },
+            "description": "Filter by company name"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PositionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by position status",
+              "title": "Status"
+            },
+            "description": "Filter by position status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyStatisticsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CompanyStatistics": {
+        "properties": {
+          "company_name": {
+            "type": "string",
+            "title": "Company Name",
+            "description": "Company name"
+          },
+          "total_applications": {
+            "type": "integer",
+            "title": "Total Applications",
+            "description": "Total applications to this company"
+          },
+          "total_interviews": {
+            "type": "integer",
+            "title": "Total Interviews",
+            "description": "Total interviews with this company"
+          },
+          "latest_application_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Application Date",
+            "description": "Most recent application date"
+          },
+          "status_breakdown": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/PositionStatus"
+            },
+            "type": "object",
+            "title": "Status Breakdown",
+            "description": "Status breakdown for this company"
+          },
+          "success_rate": {
+            "type": "number",
+            "title": "Success Rate",
+            "description": "Success rate (offers/applications)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "company_name",
+          "total_applications",
+          "total_interviews",
+          "status_breakdown",
+          "success_rate"
+        ],
+        "title": "CompanyStatistics",
+        "description": "Schema for company-based statistics."
+      },
+      "CompanyStatisticsResponse": {
+        "properties": {
+          "companies": {
+            "items": {
+              "$ref": "#/components/schemas/CompanyStatistics"
+            },
+            "type": "array",
+            "title": "Companies",
+            "description": "Statistics per company"
+          },
+          "total_companies": {
+            "type": "integer",
+            "title": "Total Companies",
+            "description": "Total number of companies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "companies",
+          "total_companies"
+        ],
+        "title": "CompanyStatisticsResponse",
+        "description": "Schema for company statistics response."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthCheckResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Service status"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "Check timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "HealthCheckResponse",
+        "description": "Schema for basic health check response."
+      },
+      "InterviewCreate": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/InterviewType",
+            "description": "Type of interview"
+          },
+          "place": {
+            "$ref": "#/components/schemas/InterviewPlace",
+            "description": "Format/location of interview"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Scheduled Date",
+            "description": "Scheduled date and time of interview"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes",
+            "description": "Interview duration in minutes"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Additional notes about the interview"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/InterviewOutcome",
+            "description": "Interview outcome",
+            "default": "pending"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "place",
+          "scheduled_date"
+        ],
+        "title": "InterviewCreate",
+        "description": "Schema for creating a new interview."
+      },
+      "InterviewListResponse": {
+        "properties": {
+          "interviews": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewResponse"
+            },
+            "type": "array",
+            "title": "Interviews",
+            "description": "List of interviews"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of interviews"
+          }
+        },
+        "type": "object",
+        "required": [
+          "interviews",
+          "total"
+        ],
+        "title": "InterviewListResponse",
+        "description": "Schema for interview list response."
+      },
+      "InterviewNotesUpdate": {
+        "properties": {
+          "notes": {
+            "type": "string",
+            "title": "Notes",
+            "description": "Updated notes about the interview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "notes"
+        ],
+        "title": "InterviewNotesUpdate",
+        "description": "Schema for updating interview notes only."
+      },
+      "InterviewOutcome": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "passed",
+          "failed",
+          "cancelled"
+        ],
+        "title": "InterviewOutcome",
+        "description": "Outcome of an interview."
+      },
+      "InterviewOutcomeUpdate": {
+        "properties": {
+          "outcome": {
+            "$ref": "#/components/schemas/InterviewOutcome",
+            "description": "Interview outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outcome"
+        ],
+        "title": "InterviewOutcomeUpdate",
+        "description": "Schema for updating interview outcome only."
+      },
+      "InterviewPlace": {
+        "type": "string",
+        "enum": [
+          "phone",
+          "video",
+          "onsite"
+        ],
+        "title": "InterviewPlace",
+        "description": "Format/location where the interview takes place."
+      },
+      "InterviewResponse": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/InterviewType",
+            "description": "Type of interview"
+          },
+          "place": {
+            "$ref": "#/components/schemas/InterviewPlace",
+            "description": "Format/location of interview"
+          },
+          "scheduled_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Scheduled Date",
+            "description": "Scheduled date and time of interview"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes",
+            "description": "Interview duration in minutes"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Additional notes about the interview"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/InterviewOutcome",
+            "description": "Interview outcome",
+            "default": "pending"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Interview unique identifier"
+          },
+          "position_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Position Id",
+            "description": "Associated position identifier"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Interview creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Interview last update timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "place",
+          "scheduled_date",
+          "id",
+          "position_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "InterviewResponse",
+        "description": "Schema for interview response data."
+      },
+      "InterviewScheduleUpdate": {
+        "properties": {
+          "scheduled_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Scheduled Date",
+            "description": "New scheduled date and time of interview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scheduled_date"
+        ],
+        "title": "InterviewScheduleUpdate",
+        "description": "Schema for updating interview scheduled date only."
+      },
+      "InterviewType": {
+        "type": "string",
+        "enum": [
+          "technical",
+          "behavioral",
+          "hr",
+          "final"
+        ],
+        "title": "InterviewType",
+        "description": "Type of interview based on its purpose."
+      },
+      "InterviewUpdate": {
+        "properties": {
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InterviewType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Type of interview"
+          },
+          "place": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InterviewPlace"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Format/location of interview"
+          },
+          "scheduled_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduled Date",
+            "description": "Scheduled date and time of interview"
+          },
+          "duration_minutes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 480.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Minutes",
+            "description": "Interview duration in minutes"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Additional notes about the interview"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InterviewOutcome"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Interview outcome"
+          }
+        },
+        "type": "object",
+        "title": "InterviewUpdate",
+        "description": "Schema for updating an existing interview."
+      },
+      "PositionCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Title",
+            "description": "Job position title"
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Company",
+            "description": "Company name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Job description"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Job location"
+          },
+          "salary_range": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Range",
+            "description": "Salary range"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PositionStatus",
+            "description": "Application status",
+            "default": "applied"
+          },
+          "application_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Application Date",
+            "description": "Date when application was submitted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "company",
+          "application_date"
+        ],
+        "title": "PositionCreate",
+        "description": "Schema for creating a new position."
+      },
+      "PositionListResponse": {
+        "properties": {
+          "positions": {
+            "items": {
+              "$ref": "#/components/schemas/PositionResponse"
+            },
+            "type": "array",
+            "title": "Positions",
+            "description": "List of positions"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of positions"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "Current page number"
+          },
+          "per_page": {
+            "type": "integer",
+            "title": "Per Page",
+            "description": "Number of items per page"
+          },
+          "has_next": {
+            "type": "boolean",
+            "title": "Has Next",
+            "description": "Whether there are more pages"
+          },
+          "has_prev": {
+            "type": "boolean",
+            "title": "Has Prev",
+            "description": "Whether there are previous pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "positions",
+          "total",
+          "page",
+          "per_page",
+          "has_next",
+          "has_prev"
+        ],
+        "title": "PositionListResponse",
+        "description": "Schema for paginated position list response."
+      },
+      "PositionResponse": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Title",
+            "description": "Job position title"
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Company",
+            "description": "Company name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Job description"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Job location"
+          },
+          "salary_range": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Range",
+            "description": "Salary range"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PositionStatus",
+            "description": "Application status",
+            "default": "applied"
+          },
+          "application_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Application Date",
+            "description": "Date when application was submitted"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Position unique identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id",
+            "description": "Owner user identifier"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Position creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Position last update timestamp"
+          },
+          "interviews": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewResponse"
+            },
+            "type": "array",
+            "title": "Interviews",
+            "description": "Associated interviews",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "company",
+          "application_date",
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PositionResponse",
+        "description": "Schema for position response data."
+      },
+      "PositionStatus": {
+        "type": "string",
+        "enum": [
+          "applied",
+          "screening",
+          "interviewing",
+          "offer",
+          "rejected",
+          "withdrawn"
+        ],
+        "title": "PositionStatus",
+        "description": "Status of a job position application."
+      },
+      "PositionStatusUpdate": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PositionStatus",
+            "description": "New application status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "PositionStatusUpdate",
+        "description": "Schema for updating position status only."
+      },
+      "PositionUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Job position title"
+          },
+          "company": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Company",
+            "description": "Company name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Job description"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location",
+            "description": "Job location"
+          },
+          "salary_range": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Salary Range",
+            "description": "Salary range"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PositionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Application status"
+          },
+          "application_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Application Date",
+            "description": "Date when application was submitted"
+          }
+        },
+        "type": "object",
+        "title": "PositionUpdate",
+        "description": "Schema for updating an existing position."
+      },
+      "StatisticsOverview": {
+        "properties": {
+          "total_applications": {
+            "type": "integer",
+            "title": "Total Applications",
+            "description": "Total number of applications"
+          },
+          "total_companies": {
+            "type": "integer",
+            "title": "Total Companies",
+            "description": "Total number of unique companies"
+          },
+          "total_interviews": {
+            "type": "integer",
+            "title": "Total Interviews",
+            "description": "Total number of interviews"
+          },
+          "response_rate": {
+            "type": "number",
+            "title": "Response Rate",
+            "description": "Percentage of applications that got responses"
+          },
+          "interview_rate": {
+            "type": "number",
+            "title": "Interview Rate",
+            "description": "Percentage of applications that led to interviews"
+          },
+          "offer_rate": {
+            "type": "number",
+            "title": "Offer Rate",
+            "description": "Percentage of applications that led to offers"
+          },
+          "status_breakdown": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/PositionStatus"
+            },
+            "type": "object",
+            "title": "Status Breakdown",
+            "description": "Count by position status"
+          },
+          "interview_type_breakdown": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/InterviewType"
+            },
+            "type": "object",
+            "title": "Interview Type Breakdown",
+            "description": "Count by interview type"
+          },
+          "interview_outcome_breakdown": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/InterviewOutcome"
+            },
+            "type": "object",
+            "title": "Interview Outcome Breakdown",
+            "description": "Count by interview outcome"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_applications",
+          "total_companies",
+          "total_interviews",
+          "response_rate",
+          "interview_rate",
+          "offer_rate",
+          "status_breakdown",
+          "interview_type_breakdown",
+          "interview_outcome_breakdown"
+        ],
+        "title": "StatisticsOverview",
+        "description": "Schema for general statistics overview."
+      },
+      "TimelineStatistics": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date",
+            "title": "Period Start",
+            "description": "Start date of the period"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date",
+            "title": "Period End",
+            "description": "End date of the period"
+          },
+          "applications_per_month": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Applications Per Month",
+            "description": "Applications count per month"
+          },
+          "interviews_per_month": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Interviews Per Month",
+            "description": "Interviews count per month"
+          },
+          "average_response_time_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Response Time Days",
+            "description": "Average days to get response"
+          },
+          "average_interview_to_decision_days": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Interview To Decision Days",
+            "description": "Average days from interview to decision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end",
+          "applications_per_month",
+          "interviews_per_month"
+        ],
+        "title": "TimelineStatistics",
+        "description": "Schema for time-based statistics."
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "JWT access token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "description": "Token type",
+            "default": "bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "description": "Token expiration time in seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_in"
+        ],
+        "title": "TokenResponse",
+        "description": "Schema for authentication token response."
+      },
+      "UserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "User's email address"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name",
+            "description": "User's first name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name",
+            "description": "User's last name"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "title": "Password",
+            "description": "User's password (minimum 8 characters)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserCreate",
+        "description": "Schema for user registration."
+      },
+      "UserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password",
+            "description": "User's password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin",
+        "description": "Schema for user login."
+      },
+      "UserResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email",
+            "description": "User's email address"
+          },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name",
+            "description": "User's first name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name",
+            "description": "User's last name"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "User's unique identifier"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "User creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "User last update timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "UserResponse",
+        "description": "Schema for user response data."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User registration, login, and token management"
+    },
+    {
+      "name": "Positions",
+      "description": "Job position management operations"
+    },
+    {
+      "name": "Interviews",
+      "description": "Interview stage tracking and management"
+    },
+    {
+      "name": "Statistics",
+      "description": "Job search analytics and insights"
+    },
+    {
+      "name": "Health",
+      "description": "API health checks and system status"
+    }
+  ]
+}

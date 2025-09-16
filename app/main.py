@@ -27,8 +27,65 @@ from .api.health import router as health_router
 
 app = FastAPI(
     title="Interview Position Tracker API",
-    description="A REST API for tracking job positions and interview progress",
-    version="1.0.0"
+    description="""
+    A comprehensive REST API for tracking job positions and interview progress.
+    
+    ## Features
+    
+    * **User Authentication**: Secure JWT-based authentication system
+    * **Position Management**: Create, read, update, and delete job positions
+    * **Interview Tracking**: Track multiple interview stages for each position
+    * **Statistics & Analytics**: Get insights into your job search progress
+    * **Data Filtering**: Filter positions by status, company, date range, and more
+    * **Secure Access**: User-specific data isolation and authorization
+    
+    ## Authentication
+    
+    Most endpoints require authentication. To authenticate:
+    
+    1. Register a new account using `/api/v1/auth/register`
+    2. Login using `/api/v1/auth/login` to get an access token
+    3. Include the token in the Authorization header: `Bearer <your_token>`
+    
+    ## Workflow
+    
+    1. **Register/Login** to get authenticated
+    2. **Create positions** for jobs you're applying to
+    3. **Add interviews** as you progress through hiring processes
+    4. **Update statuses** as your applications move forward
+    5. **View statistics** to analyze your job search performance
+    """,
+    version="1.0.0",
+    contact={
+        "name": "Interview Position Tracker API",
+        "url": "https://github.com/your-repo/interview-tracker",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    openapi_tags=[
+        {
+            "name": "Authentication",
+            "description": "User registration, login, and token management"
+        },
+        {
+            "name": "Positions",
+            "description": "Job position management operations"
+        },
+        {
+            "name": "Interviews",
+            "description": "Interview stage tracking and management"
+        },
+        {
+            "name": "Statistics",
+            "description": "Job search analytics and insights"
+        },
+        {
+            "name": "Health",
+            "description": "API health checks and system status"
+        }
+    ]
 )
 
 # Register exception handlers

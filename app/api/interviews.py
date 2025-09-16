@@ -23,7 +23,7 @@ from ..models.position import PositionStatus
 from ..models.interview import InterviewOutcome
 
 
-router = APIRouter(tags=["interviews"])
+router = APIRouter(tags=["Interviews"])
 
 
 def get_interview_repository(db: Session = Depends(get_db)) -> InterviewRepository:

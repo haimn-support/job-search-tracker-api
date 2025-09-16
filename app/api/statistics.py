@@ -17,7 +17,7 @@ from ..schemas.statistics import (
 )
 from ..schemas.enums import PositionStatus
 
-router = APIRouter(prefix="/statistics", tags=["statistics"])
+router = APIRouter(prefix="/statistics", tags=["Statistics"])
 
 
 @router.get("/overview", response_model=StatisticsOverview)

@@ -836,10 +836,126 @@ The system includes comprehensive tests to verify data isolation:
 
 ## Testing
 
-Run tests with:
+The project includes a comprehensive test suite with unit tests, integration tests, and complete user workflow tests.
+
+### Running Tests
+
+**Run all tests:**
 ```bash
 pytest
 ```
+
+**Run with coverage report:**
+```bash
+pytest --cov=app --cov-report=html --cov-report=term-missing
+```
+
+**Run specific test categories:**
+```bash
+# Unit tests only
+pytest -m unit
+
+# Integration tests only
+pytest -m integration
+
+# User workflow tests
+pytest tests/test_user_workflows.py
+```
+
+**Run comprehensive test suite:**
+```bash
+python scripts/run_tests.py
+```
+
+### Test Categories
+
+#### Unit Tests
+- **Model Tests**: Database model validation and relationships
+- **Schema Tests**: Pydantic model validation and serialization
+- **Service Tests**: Business logic and data transformations
+- **Repository Tests**: Database operations with mocked connections
+- **Utility Tests**: Helper functions and middleware
+
+#### Integration Tests
+- **API Endpoint Tests**: Complete request/response cycles
+- **Database Integration**: Tests with real database connections
+- **Authentication Flow**: JWT generation and validation
+- **Error Handling**: Error scenarios and edge cases
+
+#### User Workflow Tests
+- **Complete Job Search Workflow**: End-to-end user journey from registration to statistics
+- **Position Lifecycle**: Full position management from creation to deletion
+- **Multi-User Data Isolation**: Verify users can only access their own data
+- **Error Handling Workflow**: Comprehensive error scenario testing
+
+### Test Configuration
+
+The test suite uses:
+- **In-Memory SQLite**: Fast, isolated database for each test
+- **Test Fixtures**: Comprehensive fixtures for users, positions, and interviews
+- **Authentication Helpers**: Pre-configured auth headers for testing
+- **Database Cleanup**: Automatic cleanup after each test
+
+### Test Coverage
+
+The test suite provides comprehensive coverage of:
+- All API endpoints and their variations
+- Authentication and authorization flows
+- Database operations and relationships
+- Error handling and edge cases
+- Business logic and data validation
+- User workflows and integration scenarios
+
+### Running Specific Tests
+
+```bash
+# Test a specific file
+pytest tests/test_positions.py
+
+# Test a specific class
+pytest tests/test_user_workflows.py::TestCompleteUserWorkflows
+
+# Test a specific method
+pytest tests/test_user_workflows.py::TestCompleteUserWorkflows::test_complete_job_search_workflow
+
+# Run tests with verbose output
+pytest -v
+
+# Run tests and stop on first failure
+pytest -x
+```
+
+## API Documentation
+
+### Interactive Documentation
+
+Once the server is running, comprehensive API documentation is available:
+
+- **Swagger UI**: `http://localhost:8000/docs` - Interactive API documentation with request/response examples
+- **ReDoc**: `http://localhost:8000/redoc` - Alternative documentation interface
+
+### Generated Documentation
+
+The project includes scripts to generate static documentation:
+
+```bash
+# Generate OpenAPI schema and HTML documentation
+python scripts/generate_docs.py
+```
+
+This creates:
+- `docs/openapi.json` - Complete OpenAPI 3.0 schema
+- `docs/index.html` - Interactive HTML documentation
+- `docs/README.md` - Documentation overview and quick start guide
+
+### Documentation Features
+
+- **Complete API Reference**: All endpoints with detailed descriptions
+- **Request/Response Examples**: Real examples for every endpoint
+- **Authentication Guide**: Step-by-step authentication setup
+- **Error Documentation**: Comprehensive error codes and responses
+- **Schema Definitions**: Complete data model documentation
+- **Workflow Examples**: Common usage patterns and workflows
 
 ## Project Structure
 

@@ -20,7 +20,7 @@ from ..schemas.position import (
 from ..schemas.enums import PositionStatus
 
 
-router = APIRouter(prefix="/positions", tags=["positions"])
+router = APIRouter(prefix="/positions", tags=["Positions"])
 
 
 def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository:
@@ -28,7 +28,37 @@ def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository
     return PositionRepository(db)
 
 
-@router.post("/", response_model=PositionResponse, status_code=201)
+@router.post(
+    "/", 
+    response_model=PositionResponse, 
+    status_code=201,
+    summary="Create a new job position",
+    description="Create a new job position to track in your application process.",
+    responses={
+        201: {
+            "description": "Position successfully created",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "title": "Senior Software Engineer",
+                        "company": "TechCorp",
+                        "description": "Full-stack development with React and Python",
+                        "location": "San Francisco, CA",
+                        "salary_range": "$120k - $180k",
+                        "status": "applied",
+                        "application_date": "2024-01-15",
+                        "created_at": "2024-01-15T10:30:00Z",
+                        "updated_at": "2024-01-15T10:30:00Z",
+                        "interviews": []
+                    }
+                }
+            }
+        },
+        401: {"description": "Authentication required"},
+        422: {"description": "Validation error"}
+    }
+)
 async def create_position(
     position_data: PositionCreate,
     current_user_id: UUID = Depends(get_current_user_id),
@@ -38,6 +68,20 @@ async def create_position(
     Create a new job position.
     
     Creates a new position record for the authenticated user with the provided details.
+    All fields except description, location, and salary_range are required.
+    
+    **Example Request:**
+    ```json
+    {
+        "title": "Senior Software Engineer",
+        "company": "TechCorp",
+        "description": "Full-stack development with React and Python",
+        "location": "San Francisco, CA",
+        "salary_range": "$120k - $180k",
+        "status": "applied",
+        "application_date": "2024-01-15"
+    }
+    ```
     """
     try:
         position = position_repo.create(current_user_id, position_data)

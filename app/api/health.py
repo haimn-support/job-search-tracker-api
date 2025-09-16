@@ -12,7 +12,7 @@ from app.schemas.common import HealthCheckResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["health"])
+router = APIRouter(tags=["Health"])
 
 
 @router.get("/health", response_model=HealthCheckResponse)
