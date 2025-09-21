@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthGuard } from '../components/auth/AuthGuard';
 import { useAuth } from '../hooks/useAuth';
+import { usePositions } from '../hooks/usePositions';
 import { Button } from '../components/ui';
+import { PositionList, DashboardSummary } from '../components';
+import { Position } from '../types';
 
 export const DashboardPage: React.FC = () => {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
+  // Fetch positions data
+  const { 
+    data: positionsResponse, 
+    isLoading: positionsLoading, 
+    error: positionsError
+  } = usePositions();
+
+  const positions = positionsResponse?.positions || [];
 
   const handleLogout = async () => {
     try {
@@ -14,9 +29,42 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleCreateNew = () => {
+    // TODO: Navigate to create position page or open modal
+    console.log('Create new position');
+    setShowCreateModal(true);
+  };
+
+  const handleEditPosition = (position: Position) => {
+    // TODO: Navigate to edit position page or open modal
+    console.log('Edit position:', position.id);
+    navigate(`/positions/${position.id}/edit`);
+  };
+
+  const handleDeletePosition = (id: string) => {
+    // TODO: Show confirmation dialog and delete
+    console.log('Delete position:', id);
+    if (window.confirm('Are you sure you want to delete this position?')) {
+      // Delete logic will be implemented in task 5.3
+    }
+  };
+
+  const handleAddInterview = (positionId: string) => {
+    // TODO: Navigate to add interview page or open modal
+    console.log('Add interview for position:', positionId);
+    navigate(`/positions/${positionId}/interviews/new`);
+  };
+
+  const handleViewDetails = (id: string) => {
+    // TODO: Navigate to position details page
+    console.log('View position details:', id);
+    navigate(`/positions/${id}`);
+  };
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
+        {/* Header */}
         <div className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
@@ -29,9 +77,9 @@ export const DashboardPage: React.FC = () => {
                 </p>
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={handleLogout}
-                loading={isLoading}
+                loading={authLoading}
               >
                 Logout
               </Button>
@@ -39,25 +87,51 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Dashboard Coming Soon
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  Your job application tracking dashboard will be available here.
-                </p>
-                <div className="space-y-2 text-sm text-gray-500">
-                  <p>User ID: {user?.id}</p>
-                  <p>Email: {user?.email}</p>
-                  <p>Member since: {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</p>
-                </div>
+          <div className="px-4 py-6 sm:px-0 space-y-8">
+            {/* Dashboard Summary */}
+            <DashboardSummary 
+              positions={positions}
+              loading={positionsLoading}
+            />
+
+            {/* Position List */}
+            <PositionList
+              positions={positions}
+              loading={positionsLoading}
+              error={positionsError ? String(positionsError) : null}
+              onCreateNew={handleCreateNew}
+              onEditPosition={handleEditPosition}
+              onDeletePosition={handleDeletePosition}
+              onAddInterview={handleAddInterview}
+              onViewDetails={handleViewDetails}
+            />
+          </div>
+        </div>
+
+        {/* Create Position Modal - TODO: Implement in task 5.2 */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-lg font-semibold mb-4">Create Position</h3>
+              <p className="text-gray-600 mb-4">
+                Position creation form will be implemented in task 5.2
+              </p>
+              <div className="flex justify-end space-x-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={() => setShowCreateModal(false)}>
+                  OK
+                </Button>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </AuthGuard>
   );

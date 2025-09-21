@@ -60,8 +60,8 @@
     - Create responsive navigation for mobile devices
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-- [ ] 5. Position Management Features
-  - [ ] 5.1 Create position list and dashboard
+- [-] 5. Position Management Features
+  - [x] 5.1 Create position list and dashboard
     - Build PositionCard component with interview preview and quick actions
     - Implement PositionList component with grid layout and empty states
     - Create dashboard with summary statistics and recent activity

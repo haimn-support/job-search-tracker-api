@@ -6,3 +6,9 @@ export * from './auth';
 
 // Layout Components
 export * from './layout';
+
+// Position Components
+export * from './positions';
+
+// Dashboard Components
+export * from './dashboard';

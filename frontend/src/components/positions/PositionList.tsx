@@ -1,0 +1,203 @@
+import React from 'react';
+import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { Position } from '../../types';
+import { Button } from '../ui';
+import { PositionCard } from './PositionCard';
+import { cn } from '../../utils';
+
+interface PositionListProps {
+  positions: Position[];
+  loading: boolean;
+  error?: string | null;
+  onCreateNew: () => void;
+  onEditPosition: (position: Position) => void;
+  onDeletePosition: (id: string) => void;
+  onAddInterview: (positionId: string) => void;
+  onViewDetails: (id: string) => void;
+  className?: string;
+}
+
+const LoadingSkeleton: React.FC = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {Array.from({ length: 6 }).map((_, index) => (
+      <div
+        key={index}
+        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse"
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-1"></div>
+            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          </div>
+          <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
+        </div>
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-8 bg-gray-100 rounded mt-4"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+const EmptyState: React.FC<{ onCreateNew: () => void }> = ({ onCreateNew }) => (
+  <div className="text-center py-12">
+    <div className="mx-auto h-24 w-24 text-gray-300 mb-4">
+      <svg
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        className="h-full w-full"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1}
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        />
+      </svg>
+    </div>
+    <h3 className="text-lg font-medium text-gray-900 mb-2">
+      No positions yet
+    </h3>
+    <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+      Start tracking your job applications by creating your first position.
+    </p>
+    <Button onClick={onCreateNew} size="lg">
+      <PlusIcon className="h-5 w-5 mr-2" />
+      Create Your First Position
+    </Button>
+  </div>
+);
+
+const ErrorState: React.FC<{ error: string; onRetry: () => void }> = ({ error, onRetry }) => (
+  <div className="text-center py-12">
+    <div className="mx-auto h-24 w-24 text-red-300 mb-4">
+      <svg
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        className="h-full w-full"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1}
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </div>
+    <h3 className="text-lg font-medium text-gray-900 mb-2">
+      Failed to load positions
+    </h3>
+    <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+      {error || 'Something went wrong while loading your positions.'}
+    </p>
+    <Button onClick={onRetry} variant="secondary">
+      Try Again
+    </Button>
+  </div>
+);
+
+// This component will be used in future tasks for search/filter functionality
+// const NoResultsState: React.FC = () => (
+//   <div className="text-center py-12">
+//     <div className="mx-auto h-24 w-24 text-gray-300 mb-4">
+//       <MagnifyingGlassIcon className="h-full w-full" />
+//     </div>
+//     <h3 className="text-lg font-medium text-gray-900 mb-2">
+//       No positions found
+//     </h3>
+//     <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+//       Try adjusting your search or filter criteria to find what you're looking for.
+//     </p>
+//   </div>
+// );
+
+export const PositionList: React.FC<PositionListProps> = ({
+  positions,
+  loading,
+  error,
+  onCreateNew,
+  onEditPosition,
+  onDeletePosition,
+  onAddInterview,
+  onViewDetails,
+  className,
+}) => {
+  const handleRetry = () => {
+    // This will be handled by the parent component through refetch
+    window.location.reload();
+  };
+
+  if (loading) {
+    return (
+      <div className={cn('space-y-6', className)}>
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={cn('space-y-6', className)}>
+        <ErrorState error={error} onRetry={handleRetry} />
+      </div>
+    );
+  }
+
+  if (!positions || positions.length === 0) {
+    return (
+      <div className={cn('space-y-6', className)}>
+        <EmptyState onCreateNew={onCreateNew} />
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('space-y-6', className)}>
+      {/* Header with Create Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Your Positions ({positions.length})
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Track and manage your job applications
+          </p>
+        </div>
+        <Button onClick={onCreateNew}>
+          <PlusIcon className="h-4 w-4 mr-2" />
+          Add Position
+        </Button>
+      </div>
+
+      {/* Position Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {positions.map((position) => (
+          <PositionCard
+            key={position.id}
+            position={position}
+            onEdit={onEditPosition}
+            onDelete={onDeletePosition}
+            onAddInterview={onAddInterview}
+            onViewDetails={onViewDetails}
+          />
+        ))}
+      </div>
+
+      {/* Load More or Pagination could go here */}
+      {positions.length > 0 && (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">
+            Showing {positions.length} position{positions.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PositionList;
