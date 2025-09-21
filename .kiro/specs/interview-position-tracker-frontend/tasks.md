@@ -8,14 +8,14 @@
   - Set up environment variables for API endpoints and configuration
   - _Requirements: All requirements foundation_
 
-- [ ] 2. Core Infrastructure and Utilities
-  - [ ] 2.1 Create TypeScript type definitions and interfaces
+- [x] 2. Core Infrastructure and Utilities
+  - [x] 2.1 Create TypeScript type definitions and interfaces
     - Define Position, Interview, User, and API response types
     - Create enum types for PositionStatus, InterviewType, InterviewPlace, InterviewOutcome
     - Set up form data types and validation schemas
     - _Requirements: 1.1, 2.1, 3.1, 4.1_
 
-  - [ ] 2.2 Implement HTTP client and API service layer
+  - [x] 2.2 Implement HTTP client and API service layer
     - Set up Axios instance with interceptors for authentication and error handling
     - Create AuthService with login, register, logout, and token management
     - Create PositionService with CRUD operations and filtering
@@ -23,7 +23,7 @@
     - Create StatisticsService for analytics data
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-  - [ ] 2.3 Set up React Query for server state management
+  - [x] 2.3 Set up React Query for server state management
     - Configure QueryClient with caching strategies and error handling
     - Create custom hooks for positions, interviews, and statistics queries
     - Implement optimistic updates and cache invalidation strategies

@@ -145,3 +145,152 @@ export interface PositionStatistics {
     interview_count: number;
   }>;
 }
+
+// Authentication types
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface TokenRefreshResponse {
+  access_token: string;
+  token_type: string;
+}
+
+// Form validation types
+export interface FormErrors {
+  [key: string]: string | undefined;
+}
+
+export interface PositionFormData {
+  title: string;
+  company: string;
+  description: string;
+  location: string;
+  salary_range: string;
+  status: PositionStatus;
+  application_date: string;
+}
+
+export interface InterviewFormData {
+  type: InterviewType;
+  place: InterviewPlace;
+  scheduled_date: string;
+  duration_minutes: number | undefined;
+  notes: string;
+  outcome: InterviewOutcome;
+}
+
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+export interface RegisterFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  first_name: string;
+  last_name: string;
+}
+
+// API List Response types
+export interface PositionListResponse {
+  positions: Position[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+}
+
+export interface InterviewListResponse {
+  interviews: Interview[];
+  total: number;
+}
+
+// Quick update types for inline editing
+export interface QuickUpdateData {
+  field: string;
+  value: any;
+}
+
+// User preferences and settings
+export interface UserPreferences {
+  theme: 'light' | 'dark' | 'system';
+  defaultPositionStatus: PositionStatus;
+  defaultInterviewType: InterviewType;
+  defaultInterviewPlace: InterviewPlace;
+  dateFormat: 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  timezone: string;
+}
+
+// Cache and offline types
+export interface CacheMetadata {
+  timestamp: number;
+  version: string;
+  ttl: number;
+}
+
+export interface OfflineQueueItem {
+  id: string;
+  type: 'create' | 'update' | 'delete';
+  resource: 'position' | 'interview';
+  data: any;
+  timestamp: number;
+  retryCount: number;
+}
+
+// UI State types
+export interface UIState {
+  sidebarOpen: boolean;
+  theme: 'light' | 'dark';
+  loading: boolean;
+  error: string | null;
+}
+
+// Notification types
+export interface NotificationData {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  duration?: number;
+  actions?: Array<{
+    label: string;
+    action: () => void;
+  }>;
+}
+
+// Component prop types
+export interface BaseComponentProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export interface LoadingState {
+  loading: boolean;
+  error?: string | null;
+}
+
+// Search and filter types
+export interface SearchState {
+  query: string;
+  filters: PositionFilters;
+  sortBy: 'created_at' | 'updated_at' | 'application_date' | 'title' | 'company';
+  sortOrder: 'asc' | 'desc';
+}
+
+export interface FilterOption {
+  label: string;
+  value: string;
+  count?: number;
+}
+
+// Export utility types
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type PartialExcept<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+// Re-export validation types
+export * from './validation';
