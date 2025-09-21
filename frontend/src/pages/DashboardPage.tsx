@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthGuard } from '../components/auth/AuthGuard';
 import { useAuth } from '../hooks/useAuth';
@@ -10,7 +10,7 @@ import { Position } from '../types';
 export const DashboardPage: React.FC = () => {
   const { user, logout, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [showCreateModal, setShowCreateModal] = useState(false);
+
   
   // Fetch positions data
   const { 
@@ -30,9 +30,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   const handleCreateNew = () => {
-    // TODO: Navigate to create position page or open modal
-    console.log('Create new position');
-    setShowCreateModal(true);
+    navigate('/positions/create');
   };
 
   const handleEditPosition = (position: Position) => {
@@ -110,28 +108,7 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Create Position Modal - TODO: Implement in task 5.2 */}
-        {showCreateModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold mb-4">Create Position</h3>
-              <p className="text-gray-600 mb-4">
-                Position creation form will be implemented in task 5.2
-              </p>
-              <div className="flex justify-end space-x-3">
-                <Button
-                  variant="secondary"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={() => setShowCreateModal(false)}>
-                  OK
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
     </AuthGuard>
   );

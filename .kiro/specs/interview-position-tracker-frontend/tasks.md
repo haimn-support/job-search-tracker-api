@@ -60,7 +60,7 @@
     - Create responsive navigation for mobile devices
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-- [-] 5. Position Management Features
+- [ ] 5. Position Management Features
   - [x] 5.1 Create position list and dashboard
     - Build PositionCard component with interview preview and quick actions
     - Implement PositionList component with grid layout and empty states
@@ -68,7 +68,7 @@
     - Add loading states and error handling for position data
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.1.1, 2.1.2, 2.1.3, 2.1.4, 2.1.5, 2.1.6, 2.1.7_
 
-  - [ ] 5.2 Implement position creation and editing
+  - [x] 5.2 Implement position creation and editing
     - Create PositionForm component with validation and auto-save
     - Build position creation page with form handling and error states
     - Implement position editing with pre-filled forms and update logic
