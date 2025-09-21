@@ -45,15 +45,15 @@
     - Create authentication pages with responsive design
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-- [ ] 4. Core UI Components Library
-  - [ ] 4.1 Create basic UI components
+- [x] 4. Core UI Components Library
+  - [x] 4.1 Create basic UI components
     - Implement Button component with variants, sizes, and loading states
     - Create Input, TextArea, and Select form components with validation
     - Build Modal component with accessibility and focus management
     - Create StatusBadge component for position and interview statuses
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7_
 
-  - [ ] 4.2 Build layout and navigation components
+  - [x] 4.2 Build layout and navigation components
     - Create AppLayout component with responsive sidebar and header
     - Implement Header component with navigation and user menu
     - Build Sidebar component with collapsible navigation
