@@ -1,4 +1,5 @@
-import { apiRequest, tokenManager } from './httpClient';
+import { apiRequest } from './httpClient';
+import { tokenManager } from '../utils/tokenManager';
 import {
   User,
   AuthResponse,
@@ -61,7 +62,7 @@ class AuthService {
     const response = await apiRequest.get<User>('/auth/me');
     
     // Update stored user data
-    localStorage.setItem('user', JSON.stringify(response));
+    tokenManager.setUser(response);
     
     return response;
   }
@@ -70,7 +71,7 @@ class AuthService {
    * Refresh access token
    */
   async refreshToken(): Promise<string> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = tokenManager.getRefreshToken();
     
     if (!refreshToken) {
       throw new Error('No refresh token available');
@@ -81,7 +82,7 @@ class AuthService {
     });
 
     // Update stored access token
-    localStorage.setItem('access_token', response.access_token);
+    tokenManager.updateAccessToken(response.access_token);
 
     return response.access_token;
   }

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { ApiError, AuthResponse } from '../types';
+import { tokenManager } from '../utils/tokenManager';
 
 // Create axios instance with base configuration
 const createHttpClient = (): AxiosInstance => {
@@ -16,9 +17,9 @@ const createHttpClient = (): AxiosInstance => {
   // Request interceptor for authentication
   client.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const authHeader = tokenManager.getAuthHeader();
+      if (authHeader) {
+        config.headers.Authorization = authHeader;
       }
       return config;
     },
@@ -40,14 +41,14 @@ const createHttpClient = (): AxiosInstance => {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = localStorage.getItem('refresh_token');
+          const refreshToken = tokenManager.getRefreshToken();
           if (refreshToken) {
             const response = await axios.post(`${baseURL}/auth/refresh`, {
               refresh_token: refreshToken,
             });
 
-            const { access_token } = response.data;
-            localStorage.setItem('access_token', access_token);
+            const { access_token, expires_in } = response.data;
+            tokenManager.updateAccessToken(access_token, expires_in);
 
             // Retry the original request with new token
             if (originalRequest.headers) {
@@ -56,10 +57,8 @@ const createHttpClient = (): AxiosInstance => {
             return client(originalRequest);
           }
         } catch (refreshError) {
-          // Refresh failed, redirect to login
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('user');
+          // Refresh failed, clear tokens and redirect to login
+          tokenManager.clearTokens();
           window.location.href = '/login';
           return Promise.reject(refreshError);
         }
@@ -101,32 +100,7 @@ export const apiRequest = {
     httpClient.delete(url, config).then((response) => response.data),
 };
 
-// Token management utilities
-export const tokenManager = {
-  setTokens: (authResponse: AuthResponse) => {
-    localStorage.setItem('access_token', authResponse.access_token);
-    localStorage.setItem('user', JSON.stringify(authResponse.user));
-    // Note: refresh_token would be set if provided by the API
-  },
-
-  clearTokens: () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-  },
-
-  getAccessToken: (): string | null => {
-    return localStorage.getItem('access_token');
-  },
-
-  getUser: () => {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
-  },
-
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('access_token');
-  },
-};
+// Re-export tokenManager for backward compatibility
+export { tokenManager };
 
 export default httpClient;

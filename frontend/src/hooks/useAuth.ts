@@ -3,7 +3,6 @@ import { toast } from 'react-hot-toast';
 import { authService } from '../services';
 import { queryKeys } from '../lib/queryClient';
 import {
-  User,
   AuthResponse,
   LoginCredentials,
   RegisterData,
@@ -56,11 +55,9 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (userData: RegisterData) => authService.register(userData),
-    onSuccess: (data: User) => {
+    onSuccess: () => {
       toast.success('Registration successful! Please log in.');
     },
     onError: (error: any) => {
@@ -84,7 +81,7 @@ export const useLogout = () => {
       
       toast.success('Logged out successfully');
     },
-    onError: (error: any) => {
+    onError: () => {
       // Even if logout API fails, clear local data
       queryClient.clear();
       queryClient.removeQueries(queryKeys.auth.user);
@@ -100,11 +97,11 @@ export const useRefreshToken = () => {
 
   return useMutation({
     mutationFn: () => authService.refreshToken(),
-    onSuccess: (accessToken: string) => {
+    onSuccess: () => {
       // Token refreshed successfully, update verification status
       queryClient.setQueryData(queryKeys.auth.verify, true);
     },
-    onError: (error: any) => {
+    onError: () => {
       // Refresh failed, clear auth data and redirect to login
       queryClient.clear();
       queryClient.removeQueries(queryKeys.auth.user);
@@ -156,37 +153,11 @@ export const useChangePassword = () => {
   });
 };
 
-// Combined hooks and utilities
+// Combined hooks and utilities - use AuthContext directly
 export const useAuth = () => {
-  const userQuery = useCurrentUser();
-  const loginMutation = useLogin();
-  const logoutMutation = useLogout();
-  const registerMutation = useRegister();
-
-  const isAuthenticated = authService.isAuthenticated();
-  const storedUser = authService.getStoredUser();
-
-  return {
-    // State
-    user: userQuery.data || storedUser,
-    isAuthenticated,
-    isLoading: userQuery.isLoading,
-    error: userQuery.error,
-    
-    // Actions
-    login: loginMutation.mutate,
-    logout: logoutMutation.mutate,
-    register: registerMutation.mutate,
-    
-    // Mutation states
-    isLoggingIn: loginMutation.isPending,
-    isLoggingOut: logoutMutation.isPending,
-    isRegistering: registerMutation.isPending,
-    
-    // Errors
-    loginError: loginMutation.error,
-    registerError: registerMutation.error,
-  };
+  // Import and use AuthContext directly
+  const { useAuthContext } = require('../providers/AuthProvider');
+  return useAuthContext();
 };
 
 export const useAuthGuard = () => {

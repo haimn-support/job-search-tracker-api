@@ -97,6 +97,7 @@ export interface RegisterData {
   password: string;
   first_name: string;
   last_name: string;
+  confirmPassword?: string; // Optional for API calls, required for forms
 }
 
 export interface CreatePositionData {
@@ -193,6 +194,7 @@ export interface RegisterFormData {
   confirmPassword: string;
   first_name: string;
   last_name: string;
+  terms?: boolean;
 }
 
 // API List Response types

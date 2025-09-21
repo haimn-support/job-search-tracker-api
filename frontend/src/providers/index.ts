@@ -1,2 +1,3 @@
 export { QueryProvider } from './QueryProvider';
-export { default as QueryProvider } from './QueryProvider';
+export { AuthProvider, useAuthContext } from './AuthProvider';
+export { AppProvider } from './AppProvider';

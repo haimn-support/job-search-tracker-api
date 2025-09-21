@@ -113,7 +113,7 @@ export const useCreateInterview = () => {
 
       return { previousInterviews, positionId: newInterview.position_id };
     },
-    onError: (err, newInterview, context) => {
+    onError: (_err, _newInterview, context) => {
       // Rollback on error
       if (context?.previousInterviews) {
         queryClient.setQueryData(

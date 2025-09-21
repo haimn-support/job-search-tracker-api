@@ -1,15 +1,28 @@
+
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider } from './providers';
+import { LoginPage, RegisterPage, DashboardPage } from './pages';
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Interview Position Tracker
-        </h1>
-        <p className="text-gray-600">
-          Welcome to your job application management system.
-        </p>
-      </div>
-    </div>
+    <AppProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Protected routes */}
+          <Route path="/dashboard" element={<DashboardPage />} />
+          
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
+          {/* Catch all route */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Router>
+    </AppProvider>
   );
 }
 
