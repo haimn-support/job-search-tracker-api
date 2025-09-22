@@ -15,3 +15,6 @@ export * from './dashboard';
 
 // Interview Components
 export * from './interviews';
+
+// Statistics Components
+export * from './statistics';

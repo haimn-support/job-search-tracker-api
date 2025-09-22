@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './providers';
-import { LoginPage, RegisterPage, DashboardPage, PositionsPage, CreatePositionPage, EditPositionPage, PositionDetailsPage } from './pages';
+import { LoginPage, RegisterPage, DashboardPage, PositionsPage, CreatePositionPage, EditPositionPage, PositionDetailsPage, StatisticsPage } from './pages';
 
 function App() {
   return (
@@ -18,6 +18,7 @@ function App() {
           <Route path="/positions/create" element={<CreatePositionPage />} />
           <Route path="/positions/:id" element={<PositionDetailsPage />} />
           <Route path="/positions/:id/edit" element={<EditPositionPage />} />
+          <Route path="/statistics" element={<StatisticsPage />} />
           
           {/* Default redirect */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

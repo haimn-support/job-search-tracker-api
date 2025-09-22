@@ -853,11 +853,46 @@ The frontend includes a sophisticated filtering system that makes it easy to fin
 - Interview scheduling with conflict detection
 - Quick actions for common operations
 
-### 📊 **Analytics & Insights**
-- Real-time statistics dashboard
-- Success rate calculations and conversion funnels
-- Company-wise performance analysis
-- Timeline trends and progress tracking
+### 📊 **Statistics & Analytics Dashboard**
+
+The frontend includes a comprehensive statistics and analytics dashboard that provides deep insights into your job search performance:
+
+#### **Interactive Data Visualization**
+- **Chart.js Integration**: Professional charts with interactive features and drill-down capabilities
+- **Position Status Breakdown**: Doughnut chart showing distribution of application statuses
+- **Interview Outcomes**: Bar chart displaying interview success rates and outcomes
+- **Interview Types**: Pie chart showing distribution of technical, behavioral, HR, and final interviews
+- **Company Performance**: Sortable table with company-wise statistics and success rates
+
+#### **Key Performance Metrics**
+- **Success Rate Tracking**: Application-to-interview and interview-to-offer conversion rates
+- **Performance Indicators**: Total applications, interviews conducted, and offers received
+- **Average Metrics**: Interviews per position and overall success percentages
+- **Time-based Analysis**: Monthly trends and activity patterns
+
+#### **Advanced Filtering & Date Range Selection**
+- **Date Range Filtering**: Filter statistics by custom date ranges or preset periods
+- **Quick Presets**: Last 7 days, 30 days, 90 days, this year, last year options
+- **Real-time Updates**: Statistics automatically refresh when filters are applied
+- **Filter Persistence**: Applied filters are maintained across page refreshes
+
+#### **Interactive Features**
+- **Drill-down Functionality**: Click on charts or table rows to see detailed breakdowns
+- **Export Capabilities**: Export statistics data in JSON or CSV formats
+- **Responsive Design**: Mobile-optimized charts and tables with touch-friendly interactions
+- **Loading States**: Smooth loading indicators and error handling
+
+#### **Data Export & Sharing**
+- **Multiple Export Formats**: JSON for data analysis, CSV for spreadsheet compatibility
+- **Comprehensive Reports**: Export overview statistics, position data, interview data, or complete datasets
+- **Filtered Exports**: Export data based on applied date ranges and filters
+- **Metadata Inclusion**: Exports include timestamps and filter information for context
+
+#### **Mobile-First Analytics**
+- **Responsive Layout**: Optimized viewing experience across all device sizes
+- **Touch Interactions**: Mobile-friendly chart interactions and navigation
+- **Collapsible Sections**: Organized content with expandable sections for mobile
+- **Performance Optimized**: Efficient rendering for smooth mobile performance
 
 ### 🔐 **Security & Authentication**
 - JWT-based authentication with automatic refresh
