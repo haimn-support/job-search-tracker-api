@@ -1,23 +1,26 @@
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { usePositionFilters } from '../usePositionFilters';
 import { PositionStatus } from '../../types';
 
 // Mock react-router-dom
 const mockSetSearchParams = jest.fn();
+let mockSearchParams = new URLSearchParams();
+
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useSearchParams: () => [new URLSearchParams(), mockSetSearchParams],
+  useSearchParams: () => [mockSearchParams, mockSetSearchParams],
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <MemoryRouter>{children}</MemoryRouter>
 );
 
 describe('usePositionFilters', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
   });
 
   it('initializes with empty filters', () => {

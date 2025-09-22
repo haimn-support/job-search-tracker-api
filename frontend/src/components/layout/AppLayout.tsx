@@ -98,7 +98,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <AuthGuard>
-      <div className="h-screen flex overflow-hidden bg-gray-50">
+      <div className="h-screen flex overflow-hidden bg-gray-50" role="main">
         {/* Sidebar */}
         <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
 
@@ -111,7 +111,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           />
 
           {/* Main content */}
-          <main className="flex-1 relative overflow-y-auto focus:outline-none">
+          <main 
+            id="main-content"
+            className="flex-1 relative overflow-y-auto focus:outline-none"
+            role="main"
+            aria-label="Main content"
+            tabIndex={-1}
+          >
             <div className="py-3 sm:py-6">
               <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
                 {children || <Outlet />}

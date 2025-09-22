@@ -10,8 +10,9 @@ module.exports = {
   testEnvironment: 'jsdom',
   
   // Module name mapping for absolute imports
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '@tanstack/react-query-devtools': '<rootDir>/src/__mocks__/@tanstack/react-query-devtools.js',
   },
   
   // Coverage configuration
@@ -51,6 +52,11 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
     '^.+\\.css$': 'jest-transform-css',
   },
+  
+  // Transform ignore patterns for ES modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(axios|@tanstack|superjson|copy-anything|is-what)/)',
+  ],
   
   // Module file extensions
   moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json'],

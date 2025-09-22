@@ -4,7 +4,8 @@ import { createMockUser } from '../../test-utils/test-data';
 
 // Mock the HTTP client
 jest.mock('../httpClient');
-const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>;
+import { apiRequest } from '../httpClient';
+const mockedApiRequest = apiRequest as jest.Mocked<typeof apiRequest>;
 
 describe('AuthService', () => {
   beforeEach(() => {
@@ -23,7 +24,7 @@ describe('AuthService', () => {
         },
       };
 
-      mockedHttpClient.post.mockResolvedValue(mockResponse);
+      mockedApiRequest.post.mockResolvedValue(mockResponse.data);
 
       const credentials = {
         email: 'test@example.com',
@@ -32,9 +33,17 @@ describe('AuthService', () => {
 
       const result = await authService.login(credentials);
 
-      expect(mockedHttpClient.post).toHaveBeenCalledWith('/auth/login', credentials);
+      const formData = new FormData();
+      formData.append('username', credentials.email);
+      formData.append('password', credentials.password);
+
+      expect(mockedApiRequest.post).toHaveBeenCalledWith('/auth/login', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
       expect(result).toEqual(mockResponse.data);
-      expect(localStorage.getItem('access_token')).toBe('mock-token');
+      expect(localStorage.setItem).toHaveBeenCalledWith('access_token', 'mock-token');
     });
 
     it('handles login error', async () => {
@@ -45,7 +54,7 @@ describe('AuthService', () => {
         },
       };
 
-      mockedHttpClient.post.mockRejectedValue(errorResponse);
+      mockedApiRequest.post.mockRejectedValue(errorResponse);
 
       const credentials = {
         email: 'test@example.com',
@@ -53,41 +62,41 @@ describe('AuthService', () => {
       };
 
       await expect(authService.login(credentials)).rejects.toEqual(errorResponse);
-      expect(localStorage.getItem('access_token')).toBeNull();
+      // Tokens should not be set when login fails
+      expect(localStorage.setItem).not.toHaveBeenCalledWith('access_token', expect.anything());
     });
   });
 
   describe('logout', () => {
     it('successfully logs out user', async () => {
       localStorage.setItem('access_token', 'mock-token');
-      mockedHttpClient.post.mockResolvedValue({ data: {} });
+      mockedApiRequest.post.mockResolvedValue({});
 
       await authService.logout();
 
-      expect(mockedHttpClient.post).toHaveBeenCalledWith('/auth/logout');
-      expect(localStorage.getItem('access_token')).toBeNull();
+      expect(mockedApiRequest.post).toHaveBeenCalledWith('/auth/logout');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('access_token');
     });
 
     it('clears token even if logout request fails', async () => {
       localStorage.setItem('access_token', 'mock-token');
-      mockedHttpClient.post.mockRejectedValue(new Error('Network error'));
+      mockedApiRequest.post.mockRejectedValue(new Error('Network error'));
 
       await authService.logout();
 
-      expect(localStorage.getItem('access_token')).toBeNull();
+      expect(localStorage.removeItem).toHaveBeenCalledWith('access_token');
     });
   });
 
   describe('getCurrentUser', () => {
     it('successfully gets current user', async () => {
       const mockUser = createMockUser();
-      const mockResponse = { data: mockUser };
 
-      mockedHttpClient.get.mockResolvedValue(mockResponse);
+      mockedApiRequest.get.mockResolvedValue(mockUser);
 
       const result = await authService.getCurrentUser();
 
-      expect(mockedHttpClient.get).toHaveBeenCalledWith('/auth/me');
+      expect(mockedApiRequest.get).toHaveBeenCalledWith('/auth/me');
       expect(result).toEqual(mockUser);
     });
 
@@ -99,7 +108,7 @@ describe('AuthService', () => {
         },
       };
 
-      mockedHttpClient.get.mockRejectedValue(errorResponse);
+      mockedApiRequest.get.mockRejectedValue(errorResponse);
 
       await expect(authService.getCurrentUser()).rejects.toEqual(errorResponse);
     });

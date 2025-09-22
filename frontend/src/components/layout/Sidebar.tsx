@@ -85,17 +85,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div
           className="fixed inset-0 z-40 lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         >
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity duration-300" />
         </div>
       )}
 
       {/* Sidebar */}
-      <div
+      <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:w-64',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        role="navigation"
+        aria-label="Main navigation"
+        id="sidebar-navigation"
       >
         <div className="flex flex-col h-full">
           {/* Sidebar header - mobile only */}
@@ -140,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 sm:space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-1 sm:space-y-2" role="navigation" aria-label="Main navigation">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -149,11 +153,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   to={item.href}
                   onClick={onClose}
                   className={cn(
-                    'group flex items-center px-3 py-3 sm:py-2 text-base sm:text-sm font-medium rounded-md transition-colors touch-manipulation',
+                    'group flex items-center px-3 py-3 sm:py-2 text-base sm:text-sm font-medium rounded-md transition-colors touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
                     item.current
                       ? 'bg-blue-100 text-blue-900 border-r-2 border-blue-600'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
                   )}
+                  aria-current={item.current ? 'page' : undefined}
                 >
                   <Icon
                     className={cn(
@@ -162,6 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         ? 'text-blue-600'
                         : 'text-gray-400 group-hover:text-gray-500'
                     )}
+                    aria-hidden="true"
                   />
                   {item.name}
                 </Link>

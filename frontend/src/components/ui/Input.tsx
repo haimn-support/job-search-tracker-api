@@ -10,6 +10,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, error, helperText, id, ...props }, ref) => {
     const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const helperTextId = helperText ? `${inputId}-helper` : undefined;
+    const errorId = error ? `${inputId}-error` : undefined;
 
     return (
       <div className="space-y-1">
@@ -19,7 +21,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className="block text-sm font-medium text-gray-700"
           >
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
           </label>
         )}
         <input
@@ -31,15 +33,17 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
+          aria-describedby={error ? errorId : helperTextId}
+          aria-invalid={error ? 'true' : 'false'}
           {...props}
         />
         {error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-red-600" role="alert" id={errorId}>
             {error}
           </p>
         )}
         {helperText && !error && (
-          <p className="text-sm text-gray-500">{helperText}</p>
+          <p className="text-sm text-gray-500" id={helperTextId}>{helperText}</p>
         )}
       </div>
     );

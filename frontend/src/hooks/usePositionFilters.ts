@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PositionFilters, PositionStatus } from '../types';
 
@@ -13,10 +13,8 @@ interface UsePositionFiltersReturn {
 
 export const usePositionFilters = (): UsePositionFiltersReturn => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filters, setFiltersState] = useState<PositionFilters>({});
-
-  // Initialize filters from URL on mount
-  useEffect(() => {
+  const [filters, setFiltersState] = useState<PositionFilters>(() => {
+    // Initialize filters from URL on first render
     const urlFilters: PositionFilters = {};
     
     const status = searchParams.get('status');
@@ -33,11 +31,15 @@ export const usePositionFilters = (): UsePositionFiltersReturn => {
     if (dateFrom) { urlFilters.date_from = dateFrom; }
     if (dateTo) { urlFilters.date_to = dateTo; }
 
-    setFiltersState(urlFilters);
-  }, [searchParams]);
+    return urlFilters;
+  });
+  
+  const isUpdatingFromURL = useRef(false);
 
   // Update URL when filters change
   const updateURL = useCallback((newFilters: PositionFilters) => {
+    if (isUpdatingFromURL.current) return;
+    
     const params = new URLSearchParams();
     
     Object.entries(newFilters).forEach(([key, value]) => {
@@ -46,7 +48,11 @@ export const usePositionFilters = (): UsePositionFiltersReturn => {
       }
     });
 
+    isUpdatingFromURL.current = true;
     setSearchParams(params, { replace: true });
+    setTimeout(() => {
+      isUpdatingFromURL.current = false;
+    }, 0);
   }, [setSearchParams]);
 
   // Set filters and update URL

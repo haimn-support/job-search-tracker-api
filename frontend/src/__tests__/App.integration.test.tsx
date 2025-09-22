@@ -39,11 +39,9 @@ const renderApp = (initialUser = null) => {
   
   return render(
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider initialUser={initialUser}>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider initialUser={initialUser}>
+        <App />
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

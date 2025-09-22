@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { Button, Input, FormErrorDisplay } from '../ui';
-import { FormErrorBoundary } from '../error';
+import { Button, Input } from '../ui';
+import { ErrorBoundary } from '../error';
 import { useAuth } from '../../hooks/useAuth';
 import { useFormFeedback } from '../../hooks/useFeedback';
 import { LoginFormData } from '../../types';
@@ -66,7 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
   };
 
   return (
-    <FormErrorBoundary>
+    <ErrorBoundary>
       <div className={className}>
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
@@ -81,15 +81,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" role="form" aria-label="Login form">
           {/* Global error message */}
           {(error || errors.root) && (
-            <FormErrorDisplay 
-              error={error || errors.root?.message} 
-              onRetry={() => {
-                clearErrors();
-              }}
-            />
+            <div className="rounded-md bg-red-50 p-4 mb-4">
+              <div className="text-sm text-red-700">
+                {error || errors.root?.message}
+              </div>
+            </div>
           )}
 
         {/* Email field */}
@@ -128,6 +127,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
             type="button"
             className="absolute right-3 top-8 text-gray-400 hover:text-gray-600 focus:outline-none"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label="Toggle password visibility"
             tabIndex={-1}
           >
             {showPassword ? (
@@ -251,7 +251,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
           </Button>
         </div>
       </div>
-    </FormErrorBoundary>
+    </div>
+    </ErrorBoundary>
   );
 };
 

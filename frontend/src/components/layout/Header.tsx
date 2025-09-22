@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { ThemeToggle } from '../ui/ThemeToggle';
+import { SkipLink } from '../ui/SkipLink';
 
 export interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -10,6 +12,7 @@ export interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -26,8 +29,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-      <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4 lg:px-8">
+    <>
+      <SkipLink href="#main-content">Skip to main content</SkipLink>
+      <header 
+        className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40"
+        role="banner"
+        aria-label="Site header"
+      >
+        <div className="flex items-center justify-between h-14 sm:h-16 px-3 sm:px-4 lg:px-8">
         {/* Left side - Logo and mobile menu button */}
         <div className="flex items-center">
           {/* Mobile menu button - larger touch target */}
@@ -35,13 +44,16 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
             type="button"
             className="inline-flex items-center justify-center p-3 sm:p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 lg:hidden touch-manipulation"
             onClick={onToggleSidebar}
-            aria-label="Toggle sidebar"
+            aria-label={sidebarOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar-navigation"
           >
             <svg
               className="h-6 w-6"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              aria-hidden="true"
             >
               {sidebarOpen ? (
                 <path
@@ -65,12 +77,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
           <Link
             to="/dashboard"
             className="flex items-center ml-2 sm:ml-4 lg:ml-0"
+            aria-label="Interview Position Tracker - Go to Dashboard"
           >
             <div className="flex-shrink-0 flex items-center">
               <svg
                 className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600"
                 fill="currentColor"
                 viewBox="0 0 20 20"
+                aria-hidden="true"
               >
                 <path
                   fillRule="evenodd"
@@ -86,25 +100,37 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
           </Link>
         </div>
 
-        {/* Right side - Navigation and user menu */}
+        {/* Right side - Navigation, theme toggle, and user menu */}
         <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Theme Toggle */}
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
+
           {/* Desktop navigation */}
-          <nav className="hidden md:flex space-x-6 lg:space-x-8">
+          <nav 
+            className="hidden md:flex space-x-6 lg:space-x-8"
+            role="navigation"
+            aria-label="Main navigation"
+          >
             <Link
               to="/dashboard"
-              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-current={location.pathname === '/dashboard' ? 'page' : undefined}
             >
               Dashboard
             </Link>
             <Link
               to="/positions"
-              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-current={location.pathname.startsWith('/positions') ? 'page' : undefined}
             >
               Positions
             </Link>
             <Link
               to="/statistics"
-              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              className="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              aria-current={location.pathname === '/statistics' ? 'page' : undefined}
             >
               Statistics
             </Link>
@@ -117,11 +143,13 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
               className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 p-1 sm:p-0 touch-manipulation"
               onClick={toggleUserMenu}
               aria-expanded={userMenuOpen}
-              aria-haspopup="true"
+              aria-haspopup="menu"
+              aria-label={`User menu for ${user?.first_name} ${user?.last_name}`}
+              id="user-menu-button"
             >
               <span className="sr-only">Open user menu</span>
               <div className="h-8 w-8 sm:h-8 sm:w-8 rounded-full bg-blue-600 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-white" aria-hidden="true">
                   {user?.first_name?.[0]?.toUpperCase() || 'U'}
                 </span>
               </div>
@@ -133,6 +161,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -145,16 +174,22 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
 
             {/* User dropdown menu */}
             {userMenuOpen && (
-              <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                <div className="py-1" role="menu" aria-orientation="vertical">
+              <div 
+                className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="user-menu-button"
+              >
+                <div className="py-1">
                   <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
                     <p className="font-medium">{user?.first_name} {user?.last_name}</p>
                     <p className="text-gray-500 text-xs">{user?.email}</p>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation"
+                    className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors touch-manipulation focus:outline-none focus:bg-gray-100"
                     role="menuitem"
+                    tabIndex={0}
                   >
                     Sign out
                   </button>
@@ -165,14 +200,15 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar, sidebarOpen }) 
         </div>
       </div>
 
-      {/* Mobile navigation overlay */}
-      {userMenuOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setUserMenuOpen(false)}
-        />
-      )}
-    </header>
+        {/* Mobile navigation overlay */}
+        {userMenuOpen && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => setUserMenuOpen(false)}
+          />
+        )}
+      </header>
+    </>
   );
 };
 

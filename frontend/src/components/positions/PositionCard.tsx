@@ -57,10 +57,11 @@ const InterviewPreview: React.FC<{ interview: Interview }> = ({ interview }) => 
 
   return (
     <div
+      data-testid="interview-preview"
       className={cn(
         'flex items-center space-x-2 p-2 rounded-md text-sm',
         isOverdue && 'bg-red-50 border border-red-200',
-        isTodayInterview && 'bg-blue-50 border border-blue-200',
+        isTodayInterview && 'bg-yellow-50 border border-yellow-200',
         !isOverdue && !isTodayInterview && 'bg-gray-50'
       )}
       title={`${interview.type} interview - ${format(scheduledDate, 'PPP')} at ${format(scheduledDate, 'p')}`}
@@ -68,7 +69,7 @@ const InterviewPreview: React.FC<{ interview: Interview }> = ({ interview }) => 
       <span className="text-lg">{getInterviewTypeIcon(interview.type)}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center space-x-1">
-          <span className="font-medium capitalize">{interview.type}</span>
+          <span className="font-medium">{interview.type.charAt(0).toUpperCase() + interview.type.slice(1)}</span>
           <span className={cn('text-xs', getInterviewOutcomeColor(interview.outcome))}>
             ({interview.outcome})
           </span>
@@ -126,8 +127,10 @@ export const PositionCard: React.FC<PositionCardProps> = ({
 
   return (
     <div
+      role="article"
+      aria-label={`Position: ${position.title} at ${position.company}`}
       className={cn(
-        'bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md active:shadow-lg transition-all duration-200 cursor-pointer touch-manipulation',
+        'bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg active:shadow-lg transition-all duration-200 cursor-pointer touch-manipulation',
         className
       )}
       onClick={handleCardClick}
@@ -158,6 +161,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                   e.stopPropagation();
                   setShowMenu(!showMenu);
                 }}
+                aria-label="Position options menu"
                 className="p-2 sm:p-1 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
               >
                 <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
@@ -170,6 +174,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onEdit(position);
                     }}
+                    aria-label={`Edit position ${position.title}`}
                     className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                   >
                     Edit Position
@@ -180,6 +185,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onAddInterview(position.id);
                     }}
+                    aria-label={`Add interview for ${position.title}`}
                     className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                   >
                     Add Interview
@@ -190,6 +196,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onDelete(position.id);
                     }}
+                    aria-label={`Delete position ${position.title}`}
                     className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 touch-manipulation"
                   >
                     Delete Position
@@ -227,7 +234,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
             <div className="flex items-center space-x-2">
               <UserGroupIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
               <span className="text-sm font-medium text-gray-700">
-                Interviews ({totalInterviews})
+                {totalInterviews === 1 ? '1 interview' : `${totalInterviews} interviews`}
               </span>
             </div>
             {totalInterviews === 0 && (
@@ -238,6 +245,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                   e.stopPropagation();
                   handleAddInterview();
                 }}
+                aria-label={`Add first interview for ${position.title}`}
                 className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />

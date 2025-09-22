@@ -74,3 +74,192 @@
     -webkit-line-clamp: 3;
   }
 }
+
+/* High Contrast Mode Styles */
+@layer utilities {
+  .high-contrast {
+    /* High contrast color overrides */
+    --tw-bg-opacity: 1;
+    --tw-text-opacity: 1;
+  }
+
+  .high-contrast .bg-white {
+    background-color: #ffffff !important;
+  }
+
+  .high-contrast .bg-gray-50 {
+    background-color: #f9fafb !important;
+  }
+
+  .high-contrast .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+  }
+
+  .high-contrast .text-gray-900 {
+    color: #000000 !important;
+  }
+
+  .high-contrast .text-gray-700 {
+    color: #000000 !important;
+  }
+
+  .high-contrast .text-gray-600 {
+    color: #000000 !important;
+  }
+
+  .high-contrast .text-gray-500 {
+    color: #000000 !important;
+  }
+
+  .high-contrast .border-gray-300 {
+    border-color: #000000 !important;
+    border-width: 2px !important;
+  }
+
+  .high-contrast .border-gray-200 {
+    border-color: #000000 !important;
+    border-width: 2px !important;
+  }
+
+  .high-contrast .bg-blue-600 {
+    background-color: #0000ff !important;
+  }
+
+  .high-contrast .text-blue-600 {
+    color: #0000ff !important;
+  }
+
+  .high-contrast .bg-red-600 {
+    background-color: #ff0000 !important;
+  }
+
+  .high-contrast .text-red-600 {
+    color: #ff0000 !important;
+  }
+
+  .high-contrast .bg-green-600 {
+    background-color: #008000 !important;
+  }
+
+  .high-contrast .text-green-600 {
+    color: #008000 !important;
+  }
+
+  /* Focus indicators for high contrast */
+  .high-contrast *:focus {
+    outline: 3px solid #0000ff !important;
+    outline-offset: 2px !important;
+  }
+
+  .high-contrast button:focus,
+  .high-contrast a:focus,
+  .high-contrast input:focus,
+  .high-contrast select:focus,
+  .high-contrast textarea:focus {
+    outline: 3px solid #0000ff !important;
+    outline-offset: 2px !important;
+  }
+}
+
+/* Dark Mode Styles */
+@layer utilities {
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark .bg-white {
+    background-color: #1f2937 !important;
+  }
+
+  .dark .bg-gray-50 {
+    background-color: #111827 !important;
+  }
+
+  .dark .bg-gray-100 {
+    background-color: #1f2937 !important;
+  }
+
+  .dark .text-gray-900 {
+    color: #f9fafb !important;
+  }
+
+  .dark .text-gray-700 {
+    color: #e5e7eb !important;
+  }
+
+  .dark .text-gray-600 {
+    color: #d1d5db !important;
+  }
+
+  .dark .text-gray-500 {
+    color: #9ca3af !important;
+  }
+
+  .dark .border-gray-300 {
+    border-color: #374151 !important;
+  }
+
+  .dark .border-gray-200 {
+    border-color: #374151 !important;
+  }
+
+  .dark .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .dark .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .dark .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2) !important;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus Visible for Better Keyboard Navigation */
+.focus-visible:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip Link for Keyboard Navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 1000;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 6px;
+}

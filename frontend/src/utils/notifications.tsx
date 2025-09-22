@@ -1,3 +1,4 @@
+import React from 'react';
 import { toast, Toast } from 'react-hot-toast';
 import { ApiError } from '../types';
 import { getErrorMessage } from './errorMessages';
@@ -111,7 +112,7 @@ export const notifications = {
   },
 
   // Promise-based notifications
-  promise: <T>(
+  promise: <T extends any>(
     promise: Promise<T>,
     messages: {
       loading: string;
@@ -232,7 +233,7 @@ export const operationNotifications = {
 };
 
 // Actionable notification component
-export const ActionableToast: React.FC<{
+interface ActionableToastProps {
   message: string;
   actions: Array<{
     label: string;
@@ -240,7 +241,9 @@ export const ActionableToast: React.FC<{
     style?: 'primary' | 'secondary' | 'danger';
   }>;
   onDismiss: () => void;
-}> = ({ message, actions, onDismiss }) => {
+}
+
+export const ActionableToast: React.FC<ActionableToastProps> = ({ message, actions, onDismiss }) => {
   const getButtonClasses = (style: string = 'secondary') => {
     const baseClasses = 'px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2';
     
@@ -294,7 +297,7 @@ export const useNotifications = () => {
     operations: operationNotifications,
     
     // Convenience method for handling async operations
-    handleAsync: async <T>(
+    handleAsync: async <T extends any>(
       operation: () => Promise<T>,
       messages: {
         loading: string;

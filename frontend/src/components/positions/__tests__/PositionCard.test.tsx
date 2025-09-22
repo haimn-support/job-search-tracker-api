@@ -35,7 +35,7 @@ describe('PositionCard Component', () => {
     expect(screen.getByText('Frontend Developer')).toBeInTheDocument();
     expect(screen.getByText('Tech Corp')).toBeInTheDocument();
     expect(screen.getByText('Applied')).toBeInTheDocument();
-    expect(screen.getByText('Jan 15, 2023')).toBeInTheDocument();
+    expect(screen.getByText('Applied Jan 15, 2023')).toBeInTheDocument();
   });
 
   it('displays status badge with correct styling', () => {
@@ -61,7 +61,7 @@ describe('PositionCard Component', () => {
     );
 
     statusBadge = screen.getByText('Interviewing');
-    expect(statusBadge).toHaveClass('bg-yellow-100', 'text-yellow-800');
+    expect(statusBadge).toHaveClass('bg-purple-100', 'text-purple-800');
 
     rerender(
       <PositionCard
@@ -111,7 +111,7 @@ describe('PositionCard Component', () => {
 
     expect(screen.getByText('1 interview')).toBeInTheDocument();
     expect(screen.getByText('Technical')).toBeInTheDocument();
-    expect(screen.getByText('Feb 1, 2023')).toBeInTheDocument();
+    expect(screen.getByText('Feb 1, 12:00 PM')).toBeInTheDocument();
   });
 
   it('shows multiple interviews count', () => {
@@ -147,7 +147,7 @@ describe('PositionCard Component', () => {
       />
     );
 
-    const addButton = screen.getByRole('button', { name: /add interview/i });
+    const addButton = screen.getByRole('button', { name: /add first interview/i });
     expect(addButton).toBeInTheDocument();
   });
 
@@ -163,7 +163,7 @@ describe('PositionCard Component', () => {
       />
     );
 
-    const addButton = screen.getByRole('button', { name: /add interview/i });
+    const addButton = screen.getByRole('button', { name: /add first interview/i });
     await user.click(addButton);
 
     expect(mockOnAddInterview).toHaveBeenCalledWith(defaultPosition.id);
@@ -181,6 +181,10 @@ describe('PositionCard Component', () => {
       />
     );
 
+    // Open the menu first
+    const menuButton = screen.getByRole('button', { name: /position options menu/i });
+    await user.click(menuButton);
+    
     const editButton = screen.getByRole('button', { name: /edit position/i });
     await user.click(editButton);
 
@@ -199,6 +203,10 @@ describe('PositionCard Component', () => {
       />
     );
 
+    // Open the menu first
+    const menuButton = screen.getByRole('button', { name: /position options menu/i });
+    await user.click(menuButton);
+    
     const deleteButton = screen.getByRole('button', { name: /delete position/i });
     await user.click(deleteButton);
 
@@ -266,22 +274,27 @@ describe('PositionCard Component', () => {
     );
 
     const card = screen.getByRole('article');
+    
+    // Open the menu to access edit/delete buttons
+    const menuButton = screen.getByRole('button', { name: /position options menu/i });
+    await user.click(menuButton);
+    
     const editButton = screen.getByRole('button', { name: /edit position/i });
     const deleteButton = screen.getByRole('button', { name: /delete position/i });
-    const addButton = screen.getByRole('button', { name: /add interview/i });
+    const addButton = screen.getByRole('button', { name: /add interview for/i });
 
     // Tab through interactive elements
     await user.tab();
     expect(editButton).toHaveFocus();
 
     await user.tab();
-    expect(deleteButton).toHaveFocus();
+    expect(addButton).toHaveFocus();
 
     await user.tab();
-    expect(addButton).toHaveFocus();
+    expect(deleteButton).toHaveFocus();
   });
 
-  it('has proper ARIA attributes', () => {
+  it('has proper ARIA attributes', async () => {
     render(
       <PositionCard
         position={defaultPosition}
@@ -293,6 +306,11 @@ describe('PositionCard Component', () => {
 
     const card = screen.getByRole('article');
     expect(card).toHaveAttribute('aria-label', expect.stringContaining('Frontend Developer'));
+
+    // Open the menu to access edit/delete buttons
+    const user = userEvent.setup();
+    const menuButton = screen.getByRole('button', { name: /position options menu/i });
+    await user.click(menuButton);
 
     const editButton = screen.getByRole('button', { name: /edit position/i });
     expect(editButton).toHaveAttribute('aria-label', 'Edit position Frontend Developer');

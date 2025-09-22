@@ -11,8 +11,16 @@ const mockLocalStorage = {
   clear: jest.fn(),
 };
 
+// Mock both window.localStorage and global localStorage
 Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
+  writable: true,
+});
+
+// Also mock the global localStorage
+Object.defineProperty(global, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
 });
 
 describe('FilterPresets', () => {
@@ -25,6 +33,8 @@ describe('FilterPresets', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocalStorage.getItem.mockReturnValue(null);
+    mockLocalStorage.setItem.mockClear();
+    mockLocalStorage.removeItem.mockClear();
   });
 
   it('renders default presets', () => {
@@ -99,6 +109,9 @@ describe('FilterPresets', () => {
         expect.stringContaining('My Custom Preset')
       );
     });
+    
+    // Check that the modal is closed
+    expect(screen.queryByText('Save Filter Preset')).not.toBeInTheDocument();
   });
 
   it('shows share button when filters are active', () => {
@@ -148,10 +161,15 @@ describe('FilterPresets', () => {
       },
     ];
     
+    // Set up localStorage mock before rendering
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(savedPresets));
     
     render(<FilterPresets {...defaultProps} />);
     
+    // Debug: Check if localStorage.getItem was called
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('position-filter-presets');
+    
+    // The custom preset should appear in the list
     expect(screen.getByText('My Saved Preset')).toBeInTheDocument();
   });
 
@@ -167,10 +185,13 @@ describe('FilterPresets', () => {
       },
     ];
     
+    // Set up localStorage mock before rendering
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(savedPresets));
     
     render(<FilterPresets {...defaultProps} />);
     
+    // Should show the preset name and usage count
+    expect(screen.getByText('Popular Preset')).toBeInTheDocument();
     expect(screen.getByText('(10)')).toBeInTheDocument();
   });
 
@@ -190,10 +211,13 @@ describe('FilterPresets', () => {
       },
     ];
     
+    // Set up localStorage mock before rendering
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(savedPresets));
     
     render(<FilterPresets {...defaultProps} currentFilters={customFilters} />);
     
+    // Should show the custom preset and delete button
+    expect(screen.getByText('Custom Preset')).toBeInTheDocument();
     expect(screen.getByText('Delete preset')).toBeInTheDocument();
   });
 
