@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { positionService } from '../services';
-import { queryKeys, invalidateQueries, optimisticUpdates } from '../lib/queryClient';
+import { queryKeys, invalidateQueries, optimisticUpdates, cacheConfigs } from '../lib/queryClient';
+import { useCacheInvalidation } from './useCacheInvalidation';
+import { CacheManager } from '../utils/cacheManager';
 import {
   PositionListResponse,
   CreatePositionData,
@@ -14,8 +16,12 @@ export const usePositions = (filters?: PositionFilters) => {
   return useQuery({
     queryKey: queryKeys.positions.list(filters),
     queryFn: () => positionService.getPositions(filters),
-    staleTime: 2 * 60 * 1000, // 2 minutes for frequently updated data
+    ...cacheConfigs.positions,
     select: (data: PositionListResponse) => data,
+    onSuccess: (data) => {
+      // Cache the response for offline access
+      CacheManager.save(`positions_${JSON.stringify(filters)}`, data, 5 * 60 * 1000);
+    },
   });
 };
 
@@ -24,7 +30,11 @@ export const usePosition = (id: string) => {
     queryKey: queryKeys.positions.detail(id),
     queryFn: () => positionService.getPosition(id),
     enabled: !!id,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    ...cacheConfigs.positions,
+    onSuccess: (data) => {
+      // Cache individual position data
+      CacheManager.save(`position_${id}`, data, 10 * 60 * 1000);
+    },
   });
 };
 
@@ -65,6 +75,7 @@ export const usePositionsByCompany = (company: string) => {
 // Mutation hooks
 export const useCreatePosition = () => {
   const queryClient = useQueryClient();
+  const { invalidateByMutation } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: (data: CreatePositionData) => positionService.createPosition(data),
@@ -98,13 +109,16 @@ export const useCreatePosition = () => {
       }
       toast.error('Failed to create position');
     },
-    onSuccess: (_data) => {
+    onSuccess: (data) => {
       toast.success('Position created successfully');
-      invalidateQueries.positions();
+      // Cache the new position
+      CacheManager.save(`position_${data.id}`, data, 10 * 60 * 1000);
+      // Use smart invalidation
+      invalidateByMutation('create', 'position');
     },
     onSettled: () => {
-      // Always refetch after mutation
-      invalidateQueries.positions();
+      // Clear any expired cache entries
+      CacheManager.clearExpiredCache();
     },
   });
 };

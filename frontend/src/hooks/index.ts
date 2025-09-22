@@ -14,3 +14,11 @@ export * from './useStatistics';
 // UI hooks
 export * from './useSwipeGestures';
 export * from './usePullToRefresh';
+
+// Feedback and notification hooks
+export * from './useFeedback';
+
+// Cache hooks
+export * from './useCacheMetrics';
+export * from './useCacheInvalidation';
+export * from './useCacheWarming';

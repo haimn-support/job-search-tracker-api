@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { interviewService } from '../services';
-import { queryKeys, invalidateQueries, optimisticUpdates } from '../lib/queryClient';
+import { queryKeys, invalidateQueries, optimisticUpdates, cacheConfigs } from '../lib/queryClient';
+import { useCacheInvalidation } from './useCacheInvalidation';
+import { CacheManager } from '../utils/cacheManager';
 import {
   Interview,
   CreateInterviewData,
@@ -15,7 +17,11 @@ export const useInterviews = (positionId: string) => {
     queryKey: queryKeys.interviews.list(positionId),
     queryFn: () => interviewService.getInterviews(positionId),
     enabled: !!positionId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    ...cacheConfigs.interviews,
+    onSuccess: (data) => {
+      // Cache interviews for offline access
+      CacheManager.save(`interviews_${positionId}`, data, 5 * 60 * 1000);
+    },
   });
 };
 
@@ -82,6 +88,7 @@ export const usePositionInterviewStats = (positionId: string) => {
 // Mutation hooks
 export const useCreateInterview = () => {
   const queryClient = useQueryClient();
+  const { invalidateByMutation } = useCacheInvalidation();
 
   return useMutation({
     mutationFn: (data: CreateInterviewData) => interviewService.createInterview(data),
@@ -124,12 +131,16 @@ export const useCreateInterview = () => {
       }
       toast.error('Failed to create interview');
     },
-    onSuccess: (_data) => {
+    onSuccess: (data, variables) => {
       toast.success('Interview created successfully');
+      // Cache the new interview
+      CacheManager.save(`interview_${data.id}`, data, 10 * 60 * 1000);
+      // Use smart invalidation
+      invalidateByMutation('create', 'interview', data.id, variables.position_id);
     },
-    onSettled: (data, _error, variables) => {
-      // Always refetch after mutation
-      invalidateQueries.interview(data?.id || 'unknown', variables.position_id);
+    onSettled: () => {
+      // Clear any expired cache entries
+      CacheManager.clearExpiredCache();
     },
   });
 };

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
-import { Button, Input } from '../ui';
+import { Button, Input, FormErrorDisplay } from '../ui';
+import { FormErrorBoundary } from '../error';
 import { useAuth } from '../../hooks/useAuth';
+import { useFormFeedback } from '../../hooks/useFeedback';
 import { LoginFormData } from '../../types';
+import { getFormErrorMessage } from '../../utils/errorMessages';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -12,12 +15,13 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isLoading, error } = useAuth();
+  const { login } = useAuth();
+  const { loading, error, handleSubmit: handleAsyncSubmit } = useFormFeedback();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setError,
     clearErrors,
   } = useForm<LoginFormData>({
@@ -28,72 +32,65 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      clearErrors();
-      await login({
-        email: data.email,
-        password: data.password,
-      });
-      onSuccess?.();
-    } catch (error: any) {
-      // Handle specific field errors
-      if (error.field_errors) {
-        Object.entries(error.field_errors).forEach(([field, message]) => {
-          setError(field as keyof LoginFormData, {
-            type: 'server',
-            message: message as string,
-          });
+    await handleAsyncSubmit(
+      async () => {
+        clearErrors();
+        await login({
+          email: data.email,
+          password: data.password,
         });
-      } else {
-        setError('root', {
-          type: 'server',
-          message: error.message || 'Login failed',
-        });
+      },
+      {
+        successMessage: 'Login successful! Welcome back.',
+        onSuccess: () => {
+          onSuccess?.();
+        },
+        onError: (error: any) => {
+          // Handle specific field errors
+          if (error.field_errors) {
+            Object.entries(error.field_errors).forEach(([field, message]) => {
+              setError(field as keyof LoginFormData, {
+                type: 'server',
+                message: message as string,
+              });
+            });
+          } else {
+            setError('root', {
+              type: 'server',
+              message: error.message || 'Login failed',
+            });
+          }
+        },
       }
-    }
+    );
   };
 
   return (
-    <div className={className}>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
-        <p className="mt-2 text-sm text-gray-600">
-          Or{' '}
-          <Link
-            to="/register"
-            className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
-          >
-            create a new account
-          </Link>
-        </p>
-      </div>
+    <FormErrorBoundary>
+      <div className={className}>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-900">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Or{' '}
+            <Link
+              to="/register"
+              className="font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+            >
+              create a new account
+            </Link>
+          </p>
+        </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Global error message */}
-        {(error || errors.root) && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-800">
-                  {error || errors.root?.message}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Global error message */}
+          {(error || errors.root) && (
+            <FormErrorDisplay 
+              error={error || errors.root?.message} 
+              onRetry={() => {
+                clearErrors();
+              }}
+            />
+          )}
 
         {/* Email field */}
         <Input
@@ -189,10 +186,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
         <Button
           type="submit"
           className="w-full"
-          loading={isLoading || isSubmitting}
-          disabled={isLoading || isSubmitting}
+          loading={loading}
+          disabled={loading}
         >
-          {isLoading || isSubmitting ? 'Signing in...' : 'Sign in'}
+          {loading ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
 
@@ -254,7 +251,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, className }) =>
           </Button>
         </div>
       </div>
-    </div>
+    </FormErrorBoundary>
   );
 };
 
