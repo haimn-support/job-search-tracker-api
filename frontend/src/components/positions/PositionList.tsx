@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Position } from '../../types';
 import { Button } from '../ui';
 import { PositionCard } from './PositionCard';

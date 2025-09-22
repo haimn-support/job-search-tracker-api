@@ -5,6 +5,7 @@ import {
   CreatePositionData,
   UpdatePositionData,
   PositionFilters,
+  PositionStatus,
 } from '../types';
 
 class PositionService {
@@ -15,11 +16,21 @@ class PositionService {
     const params = new URLSearchParams();
     
     if (filters) {
-      if (filters.status) params.append('status', filters.status);
-      if (filters.company) params.append('company', filters.company);
-      if (filters.search) params.append('search', filters.search);
-      if (filters.date_from) params.append('date_from', filters.date_from);
-      if (filters.date_to) params.append('date_to', filters.date_to);
+      if (filters.status) {
+        params.append('status', filters.status);
+      }
+      if (filters.company) {
+        params.append('company', filters.company);
+      }
+      if (filters.search) {
+        params.append('search', filters.search);
+      }
+      if (filters.date_from) {
+        params.append('date_from', filters.date_from);
+      }
+      if (filters.date_to) {
+        params.append('date_to', filters.date_to);
+      }
     }
 
     const queryString = params.toString();
@@ -74,7 +85,7 @@ class PositionService {
    * Get positions by status
    */
   async getPositionsByStatus(status: string): Promise<Position[]> {
-    const response = await this.getPositions({ status });
+    const response = await this.getPositions({ status: status as any });
     return response.positions;
   }
 
@@ -113,7 +124,7 @@ class PositionService {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     const response = await this.getPositions({
-      date_from: thirtyDaysAgo.toISOString().split('T')[0],
+      date_from: thirtyDaysAgo.toISOString().split('T')[0] || '',
     });
     
     return response.positions;
@@ -128,11 +139,11 @@ class PositionService {
     const duplicateData: CreatePositionData = {
       title: `${originalPosition.title} (Copy)`,
       company: originalPosition.company,
-      description: originalPosition.description,
-      location: originalPosition.location,
-      salary_range: originalPosition.salary_range,
-      status: 'applied', // Reset status for duplicate
-      application_date: new Date().toISOString().split('T')[0],
+      description: originalPosition.description || '',
+      location: originalPosition.location || '',
+      salary_range: originalPosition.salary_range || '',
+      status: PositionStatus.APPLIED, // Reset status for duplicate
+      application_date: new Date().toISOString().split('T')[0] || '',
     };
 
     return this.createPosition(duplicateData);

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { statisticsService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import { PositionStatistics } from '../types';
 
 // Query hooks
 export const useStatisticsOverview = () => {
@@ -226,8 +225,8 @@ export const useCompanyAnalytics = () => {
 
 // Utility hooks for specific use cases
 export const useStatisticsForDateRange = (startDate: Date, endDate: Date) => {
-  const dateFrom = startDate.toISOString().split('T')[0];
-  const dateTo = endDate.toISOString().split('T')[0];
+  const dateFrom = startDate.toISOString().split('T')[0] || '';
+  const dateTo = endDate.toISOString().split('T')[0] || '';
   
   return useStatsByDateRange(dateFrom, dateTo);
 };

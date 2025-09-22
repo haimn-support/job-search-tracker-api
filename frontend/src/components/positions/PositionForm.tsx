@@ -20,6 +20,13 @@ const statusOptions = [
   { value: PositionStatus.WITHDRAWN, label: 'Withdrawn' },
 ];
 
+const getFormattedDate = (dateString?: string): string => {
+  if (!dateString) {
+    return new Date().toISOString().split('T')[0] || '';
+  }
+  return dateString.includes('T') ? (dateString.split('T')[0] || '') : dateString;
+};
+
 export const PositionForm: React.FC<PositionFormProps> = ({
   position,
   onSubmit,
@@ -43,7 +50,7 @@ export const PositionForm: React.FC<PositionFormProps> = ({
       location: position?.location || '',
       salary_range: position?.salary_range || '',
       status: position?.status || PositionStatus.APPLIED,
-      application_date: position?.application_date || new Date().toISOString().split('T')[0],
+      application_date: getFormattedDate(position?.application_date),
     },
   });
 

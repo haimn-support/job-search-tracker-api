@@ -3,7 +3,6 @@ import { toast } from 'react-hot-toast';
 import { positionService } from '../services';
 import { queryKeys, invalidateQueries, optimisticUpdates } from '../lib/queryClient';
 import {
-  Position,
   PositionListResponse,
   CreatePositionData,
   UpdatePositionData,
@@ -90,7 +89,7 @@ export const useCreatePosition = () => {
 
       return { previousPositions };
     },
-    onError: (err, newPosition, context) => {
+    onError: (_err, _newPosition, context) => {
       // Rollback on error
       if (context?.previousPositions) {
         context.previousPositions.forEach(([queryKey, data]) => {
@@ -99,7 +98,7 @@ export const useCreatePosition = () => {
       }
       toast.error('Failed to create position');
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success('Position created successfully');
       invalidateQueries.positions();
     },
@@ -128,17 +127,17 @@ export const useUpdatePosition = () => {
 
       return { previousPosition, id };
     },
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       // Rollback on error
       if (context?.previousPosition) {
         queryClient.setQueryData(queryKeys.positions.detail(id), context.previousPosition);
       }
       toast.error('Failed to update position');
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success('Position updated successfully');
     },
-    onSettled: (data, error, { id }) => {
+    onSettled: (_data, _error, { id }) => {
       // Always refetch after mutation
       invalidateQueries.position(id);
     },
@@ -159,7 +158,7 @@ export const useUpdatePositionStatus = () => {
       
       return { previousPosition, id };
     },
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       if (context?.previousPosition) {
         queryClient.setQueryData(queryKeys.positions.detail(id), context.previousPosition);
       }
@@ -168,7 +167,7 @@ export const useUpdatePositionStatus = () => {
     onSuccess: () => {
       toast.success('Position status updated');
     },
-    onSettled: (data, error, { id }) => {
+    onSettled: (_data, _error, { id }) => {
       invalidateQueries.position(id);
     },
   });
@@ -187,7 +186,7 @@ export const useDeletePosition = () => {
       
       return { previousPositions };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.previousPositions) {
         context.previousPositions.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
@@ -205,11 +204,9 @@ export const useDeletePosition = () => {
 };
 
 export const useDuplicatePosition = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: string) => positionService.duplicatePosition(id),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success('Position duplicated successfully');
       invalidateQueries.positions();
     },
@@ -232,7 +229,7 @@ export const useArchivePosition = () => {
       
       return { previousPosition, id };
     },
-    onError: (err, id, context) => {
+    onError: (_err, id, context) => {
       if (context?.previousPosition) {
         queryClient.setQueryData(queryKeys.positions.detail(id), context.previousPosition);
       }
@@ -241,7 +238,7 @@ export const useArchivePosition = () => {
     onSuccess: () => {
       toast.success('Position archived successfully');
     },
-    onSettled: (data, error, id) => {
+    onSettled: (_data, _error, id) => {
       invalidateQueries.position(id);
     },
   });

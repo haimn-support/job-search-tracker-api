@@ -167,9 +167,9 @@ export interface FormErrors {
 export interface PositionFormData {
   title: string;
   company: string;
-  description: string;
-  location: string;
-  salary_range: string;
+  description?: string;
+  location?: string;
+  salary_range?: string;
   status: PositionStatus;
   application_date: string;
 }

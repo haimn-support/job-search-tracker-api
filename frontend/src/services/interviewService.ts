@@ -4,7 +4,7 @@ import {
   InterviewListResponse,
   CreateInterviewData,
   UpdateInterviewData,
-  QuickUpdateData,
+  InterviewOutcome,
 } from '../types';
 
 class InterviewService {
@@ -182,7 +182,7 @@ class InterviewService {
    */
   async cancelInterview(id: string, reason?: string): Promise<Interview> {
     const updateData: Partial<UpdateInterviewData> = {
-      outcome: 'cancelled',
+      outcome: InterviewOutcome.CANCELLED,
     };
     
     if (reason) {
@@ -201,7 +201,7 @@ class InterviewService {
    */
   async completeInterview(
     id: string, 
-    outcome: 'passed' | 'failed', 
+    outcome: InterviewOutcome.PASSED | InterviewOutcome.FAILED, 
     notes?: string
   ): Promise<Interview> {
     const updateData: Partial<UpdateInterviewData> = {

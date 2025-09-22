@@ -75,7 +75,7 @@
     - Add form draft saving and restoration functionality
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
 
-  - [ ] 5.3 Build position details and management
+  - [x] 5.3 Build position details and management
     - Create PositionDetails component with full position information
     - Implement inline editing for position fields
     - Add position deletion with confirmation dialog

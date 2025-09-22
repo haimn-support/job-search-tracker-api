@@ -6,6 +6,7 @@ import {
   Interview,
   CreateInterviewData,
   UpdateInterviewData,
+  InterviewOutcome,
 } from '../types';
 
 // Query hooks
@@ -123,10 +124,10 @@ export const useCreateInterview = () => {
       }
       toast.error('Failed to create interview');
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       toast.success('Interview created successfully');
     },
-    onSettled: (data, error, variables) => {
+    onSettled: (data, _error, variables) => {
       // Always refetch after mutation
       invalidateQueries.interview(data?.id || 'unknown', variables.position_id);
     },
@@ -157,7 +158,7 @@ export const useUpdateInterview = () => {
 
       return { previousInterview, id, positionId };
     },
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       // Rollback on error
       if (context?.previousInterview) {
         queryClient.setQueryData(queryKeys.interviews.detail(id), context.previousInterview);
@@ -167,7 +168,7 @@ export const useUpdateInterview = () => {
     onSuccess: () => {
       toast.success('Interview updated successfully');
     },
-    onSettled: (data, error, { id }, context) => {
+    onSettled: (_data, _error, { id }, context) => {
       // Always refetch after mutation
       invalidateQueries.interview(id, context?.positionId);
     },
@@ -192,13 +193,13 @@ export const useUpdateInterviewField = () => {
 
       return { previousInterview, id, positionId };
     },
-    onError: (err, { id }, context) => {
+    onError: (_err, { id }, context) => {
       if (context?.previousInterview) {
         queryClient.setQueryData(queryKeys.interviews.detail(id), context.previousInterview);
       }
       // Don't show toast for field updates to avoid spam
     },
-    onSettled: (data, error, { id }, context) => {
+    onSettled: (_data, _error, { id }, context) => {
       invalidateQueries.interview(id, context?.positionId);
     },
   });
@@ -263,7 +264,7 @@ export const useDeleteInterview = () => {
 
       return { positionId };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       if (context?.previousInterviews && context?.positionId) {
         queryClient.setQueryData(
           queryKeys.interviews.list(context.positionId),
@@ -275,7 +276,7 @@ export const useDeleteInterview = () => {
     onSuccess: () => {
       toast.success('Interview deleted successfully');
     },
-    onSettled: (data, error, id, context) => {
+    onSettled: (_data, _error, id, context) => {
       invalidateQueries.interview(id, context?.positionId);
     },
   });
@@ -293,7 +294,7 @@ export const useRescheduleInterview = () => {
     onError: () => {
       toast.error('Failed to reschedule interview');
     },
-    onSettled: (data, error, { id }) => {
+    onSettled: (_data, _error, { id }) => {
       const interview = queryClient.getQueryData(queryKeys.interviews.detail(id)) as Interview;
       invalidateQueries.interview(id, interview?.position_id);
     },
@@ -312,7 +313,7 @@ export const useCancelInterview = () => {
     onError: () => {
       toast.error('Failed to cancel interview');
     },
-    onSettled: (data, error, { id }) => {
+    onSettled: (_data, _error, { id }) => {
       const interview = queryClient.getQueryData(queryKeys.interviews.detail(id)) as Interview;
       invalidateQueries.interview(id, interview?.position_id);
     },
@@ -323,15 +324,15 @@ export const useCompleteInterview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, outcome, notes }: { id: string; outcome: 'passed' | 'failed'; notes?: string }) =>
+    mutationFn: ({ id, outcome, notes }: { id: string; outcome: InterviewOutcome.PASSED | InterviewOutcome.FAILED; notes?: string }) =>
       interviewService.completeInterview(id, outcome, notes),
-    onSuccess: (data, { outcome }) => {
+    onSuccess: (_data, { outcome }) => {
       toast.success(`Interview marked as ${outcome}`);
     },
     onError: () => {
       toast.error('Failed to complete interview');
     },
-    onSettled: (data, error, { id }) => {
+    onSettled: (_data, _error, { id }) => {
       const interview = queryClient.getQueryData(queryKeys.interviews.detail(id)) as Interview;
       invalidateQueries.interview(id, interview?.position_id);
     },
@@ -339,8 +340,6 @@ export const useCompleteInterview = () => {
 };
 
 export const useBulkUpdateInterviews = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (updates: Array<{ id: string; data: Partial<UpdateInterviewData> }>) =>
       interviewService.bulkUpdateInterviews(updates),

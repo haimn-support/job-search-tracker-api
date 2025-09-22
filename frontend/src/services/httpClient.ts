@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import { ApiError, AuthResponse } from '../types';
+import { ApiError } from '../types';
 import { tokenManager } from '../utils/tokenManager';
 
 // Create axios instance with base configuration
@@ -65,10 +65,11 @@ const createHttpClient = (): AxiosInstance => {
       }
 
       // Transform error response to standardized format
+      const responseData = error.response?.data as any;
       const apiError: ApiError = {
-        code: error.response?.data?.code || 'UNKNOWN_ERROR',
-        message: error.response?.data?.message || error.message || 'An unexpected error occurred',
-        field_errors: error.response?.data?.field_errors,
+        code: responseData?.code || 'UNKNOWN_ERROR',
+        message: responseData?.message || error.message || 'An unexpected error occurred',
+        field_errors: responseData?.field_errors,
         timestamp: new Date().toISOString(),
       };
 

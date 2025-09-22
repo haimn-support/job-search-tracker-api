@@ -6,7 +6,7 @@ export interface ValidationRule {
   minLength?: number;
   maxLength?: number;
   pattern?: RegExp;
-  custom?: (value: any) => string | null;
+  custom?: (value: any, formData?: any) => string | null;
 }
 
 export interface ValidationSchema {
@@ -212,9 +212,12 @@ export const validateForm = (
   const errors: { [key: string]: string } = {};
 
   Object.keys(schema).forEach((field) => {
-    const error = validateField(formData[field], schema[field], formData);
-    if (error) {
-      errors[field] = error;
+    const rule = schema[field];
+    if (rule) {
+      const error = validateField(formData[field], rule, formData);
+      if (error) {
+        errors[field] = error;
+      }
     }
   });
 

@@ -161,7 +161,6 @@ export class SessionPersistence {
     warningTimeBeforeExpiry: number = 5 * 60 * 1000 // 5 minutes
   ): () => void {
     let warningTimeout: NodeJS.Timeout;
-    let checkInterval: NodeJS.Timeout;
 
     const checkSessionExpiry = () => {
       const timeSinceLastActivity = this.getTimeSinceLastActivity();
@@ -179,8 +178,7 @@ export class SessionPersistence {
     };
 
     // Check every minute
-    const intervalId = setInterval(checkSessionExpiry, 60 * 1000);
-    checkInterval = intervalId;
+    const checkInterval = setInterval(checkSessionExpiry, 60 * 1000);
 
     // Cleanup function
     return () => {

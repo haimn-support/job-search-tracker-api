@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './providers';
-import { LoginPage, RegisterPage, DashboardPage, CreatePositionPage, EditPositionPage } from './pages';
+import { LoginPage, RegisterPage, DashboardPage, CreatePositionPage, EditPositionPage, PositionDetailsPage } from './pages';
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
           {/* Protected routes */}
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/positions/create" element={<CreatePositionPage />} />
+          <Route path="/positions/:id" element={<PositionDetailsPage />} />
           <Route path="/positions/:id/edit" element={<EditPositionPage />} />
           
           {/* Default redirect */}
