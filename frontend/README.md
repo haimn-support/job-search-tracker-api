@@ -34,11 +34,15 @@ A modern React TypeScript application for managing job applications and intervie
 - Company-wise application analytics
 - Interview outcome tracking and trends
 
-### 🔍 **Search & Filtering**
-- Advanced filtering by status, company, and date range
-- Full-text search across positions and companies
-- Saved filter presets for quick access
-- Real-time filter results and counts
+### 🔍 **Advanced Search & Filtering System**
+- **Smart Filter Presets**: Default and custom presets with usage tracking and popularity sorting
+- **Enhanced Date Range Picker**: Quick select options (7 days, 30 days, 3 months, etc.) with custom range support
+- **Intelligent Validation**: Real-time filter validation with smart suggestions and error prevention
+- **Import/Export**: Save and share filter configurations via JSON files or shareable URLs
+- **Multi-field Search**: Full-text search across positions, companies, and descriptions with debounced input
+- **Filter Persistence**: URL-based filter state for bookmarking and sharing
+- **Visual Feedback**: Clear filter descriptions, active counts, and one-click clearing
+- **QR Code Sharing**: Generate QR codes for mobile filter sharing
 
 ### 📱 **Responsive Design**
 - Mobile-first responsive design
@@ -198,6 +202,82 @@ npm run preview       # Preview production build locally
 - **ESLint**: Airbnb configuration with React hooks rules
 - **Prettier**: Consistent code formatting
 - **Conventional Commits**: Structured commit messages
+
+## Advanced Filtering System
+
+The application features a comprehensive filtering system designed to help users efficiently find and organize their job applications.
+
+### 🎯 **Filter Presets**
+
+**Default Presets** (always available):
+- **Active Applications**: Shows positions with "applied" status
+- **In Progress**: Displays positions currently in "interviewing" status  
+- **Recent Applications**: Applications from the last 7 days
+- **Needs Follow-up**: Positions in "screening" status
+
+**Custom Presets**:
+- Save any filter combination with a custom name
+- Usage tracking shows how often each preset is used
+- Presets are sorted by popularity for quick access
+- Delete custom presets (default presets are protected)
+- Share presets via URL generation
+
+### 📅 **Enhanced Date Range Filtering**
+
+**Quick Select Options**:
+- Last 7 days, 30 days, 3 months, 6 months
+- This year, last year
+- Custom date range with calendar picker
+
+**Smart Features**:
+- Validation prevents invalid date ranges (start after end)
+- Warnings for future dates or very old date ranges
+- Visual feedback with clear date range display
+- Easy clearing and resetting of date filters
+
+### 🧠 **Intelligent Filter Validation**
+
+**Real-time Validation**:
+- Date range order validation
+- Search term optimization suggestions
+- Filter combination logic checking
+- Performance recommendations based on result count
+
+**Smart Suggestions**:
+- Suggests broadening criteria when no results found
+- Recommends adding filters when too many results
+- Provides positive feedback for optimal result sets
+- Context-aware tips based on filter combinations
+
+### 💾 **Import/Export System**
+
+**Export Capabilities**:
+- Save current filters as JSON files
+- Generate shareable URLs with filter parameters
+- Create QR codes for mobile sharing
+- Export filter preset collections
+
+**Import Features**:
+- Load filters from JSON files
+- Import filter presets from other users
+- URL-based filter sharing and bookmarking
+- Validation of imported filter data
+
+### 🔧 **Technical Implementation**
+
+**Components**:
+- `FilterBar`: Main filtering interface with all controls
+- `FilterPresets`: Preset management and selection
+- `DateRangePicker`: Enhanced date range selection
+- Filter validation utilities with comprehensive rule engine
+- Import/export utilities with JSON and URL handling
+
+**Key Features**:
+- Debounced search input for optimal performance
+- URL state persistence for bookmarking and sharing
+- Local storage for custom presets and preferences
+- Optimistic updates with error rollback
+- Comprehensive test coverage (44 tests across all filtering features)
 
 ## Architecture
 

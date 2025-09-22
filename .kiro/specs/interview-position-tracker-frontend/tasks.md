@@ -97,15 +97,15 @@
     - Build interview preview tooltips and expanded details
     - _Requirements: 4.10, 4.11, 4.12, 2.1.3, 2.1.4_
 
-- [ ] 7. Search and Filtering System
-  - [ ] 7.1 Build position filtering and search
+- [-] 7. Search and Filtering System
+  - [x] 7.1 Build position filtering and search
     - Create FilterBar component with status, company, and date filters
     - Implement search functionality for position title, company, and description
     - Add filter persistence and URL state management
     - Create filter result counts and clear all functionality
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7_
 
-  - [ ] 7.2 Implement advanced filtering features
+  - [x] 7.2 Implement advanced filtering features
     - Add date range picker for application date filtering
     - Create saved filter presets for common searches
     - Implement filter combination logic and validation

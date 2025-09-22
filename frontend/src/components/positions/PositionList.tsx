@@ -1,19 +1,24 @@
 import React from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { Position } from '../../types';
+import { Position, PositionFilters } from '../../types';
 import { Button } from '../ui';
 import { PositionCard } from './PositionCard';
+import { FilterBar } from './FilterBar';
+import { NoResultsState } from './NoResultsState';
 import { cn } from '../../utils';
 
 interface PositionListProps {
   positions: Position[];
   loading: boolean;
   error?: string | null;
+  filters?: PositionFilters;
+  onFiltersChange?: (filters: PositionFilters) => void;
   onCreateNew: () => void;
   onEditPosition: (position: Position) => void;
   onDeletePosition: (id: string) => void;
   onAddInterview: (positionId: string) => void;
   onViewDetails: (id: string) => void;
+  showFilters?: boolean;
   className?: string;
 }
 
@@ -101,36 +106,36 @@ const ErrorState: React.FC<{ error: string; onRetry: () => void }> = ({ error, o
   </div>
 );
 
-// This component will be used in future tasks for search/filter functionality
-// const NoResultsState: React.FC = () => (
-//   <div className="text-center py-12">
-//     <div className="mx-auto h-24 w-24 text-gray-300 mb-4">
-//       <MagnifyingGlassIcon className="h-full w-full" />
-//     </div>
-//     <h3 className="text-lg font-medium text-gray-900 mb-2">
-//       No positions found
-//     </h3>
-//     <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-//       Try adjusting your search or filter criteria to find what you're looking for.
-//     </p>
-//   </div>
-// );
+
 
 export const PositionList: React.FC<PositionListProps> = ({
   positions,
   loading,
   error,
+  filters = {},
+  onFiltersChange,
   onCreateNew,
   onEditPosition,
   onDeletePosition,
   onAddInterview,
   onViewDetails,
+  showFilters = true,
   className,
 }) => {
   const handleRetry = () => {
     // This will be handled by the parent component through refetch
     window.location.reload();
   };
+
+  const handleClearFilters = () => {
+    if (onFiltersChange) {
+      onFiltersChange({});
+    }
+  };
+
+  const hasActiveFilters = Object.values(filters).some(value => 
+    value !== undefined && value !== ''
+  );
 
   if (loading) {
     return (
@@ -151,13 +156,41 @@ export const PositionList: React.FC<PositionListProps> = ({
   if (!positions || positions.length === 0) {
     return (
       <div className={cn('space-y-6', className)}>
-        <EmptyState onCreateNew={onCreateNew} />
+        {/* Show FilterBar even when no results if filters are enabled */}
+        {showFilters && onFiltersChange && (
+          <FilterBar
+            filters={filters}
+            onFiltersChange={onFiltersChange}
+            resultCount={0}
+            loading={loading}
+          />
+        )}
+        
+        {hasActiveFilters ? (
+          <NoResultsState
+            filters={filters}
+            onClearFilters={handleClearFilters}
+            onCreateNew={onCreateNew}
+          />
+        ) : (
+          <EmptyState onCreateNew={onCreateNew} />
+        )}
       </div>
     );
   }
 
   return (
     <div className={cn('space-y-6', className)}>
+      {/* Filter Bar */}
+      {showFilters && onFiltersChange && (
+        <FilterBar
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          resultCount={positions.length}
+          loading={loading}
+        />
+      )}
+
       {/* Header with Create Button */}
       <div className="flex items-center justify-between">
         <div>

@@ -3,6 +3,7 @@ export * from './useAuth';
 
 // Position hooks
 export * from './usePositions';
+export * from './usePositionFilters';
 
 // Interview hooks
 export * from './useInterviews';
