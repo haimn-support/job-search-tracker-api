@@ -86,23 +86,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           className="fixed inset-0 z-40 lg:hidden"
           onClick={onClose}
         >
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity duration-300" />
         </div>
       )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
+          'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:w-64',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar header */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 lg:hidden">
+          {/* Sidebar header - mobile only */}
+          <div className="flex items-center justify-between h-14 sm:h-16 px-4 border-b border-gray-200 lg:hidden">
             <div className="flex items-center">
               <svg
-                className="h-8 w-8 text-blue-600"
+                className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -113,13 +113,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 />
                 <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
               </svg>
-              <span className="ml-2 text-lg font-semibold text-gray-900">
+              <span className="ml-2 text-base sm:text-lg font-semibold text-gray-900">
                 Interview Tracker
               </span>
             </div>
             <button
               type="button"
-              className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="p-3 sm:p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 touch-manipulation"
               onClick={onClose}
             >
               <span className="sr-only">Close sidebar</span>
@@ -140,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+          <nav className="flex-1 px-4 py-6 space-y-1 sm:space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -149,15 +149,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   to={item.href}
                   onClick={onClose}
                   className={cn(
-                    'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                    'group flex items-center px-3 py-3 sm:py-2 text-base sm:text-sm font-medium rounded-md transition-colors touch-manipulation',
                     item.current
                       ? 'bg-blue-100 text-blue-900 border-r-2 border-blue-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
                   )}
                 >
                   <Icon
                     className={cn(
-                      'mr-3 h-5 w-5 flex-shrink-0',
+                      'mr-3 h-6 w-6 sm:h-5 sm:w-5 flex-shrink-0',
                       item.current
                         ? 'text-blue-600'
                         : 'text-gray-400 group-hover:text-gray-500'

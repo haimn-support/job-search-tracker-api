@@ -12,10 +12,10 @@ export interface ModalProps {
 }
 
 const sizeClasses = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-4xl',
+  sm: 'max-w-sm sm:max-w-md',
+  md: 'max-w-md sm:max-w-lg',
+  lg: 'max-w-lg sm:max-w-2xl',
+  xl: 'max-w-xl sm:max-w-4xl',
 };
 
 export const Modal: React.FC<ModalProps> = ({
@@ -50,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
   }
 
   const modalContent = (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -61,7 +61,9 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Modal */}
       <div
         className={cn(
-          'relative bg-white rounded-lg shadow-xl w-full',
+          'relative bg-white shadow-xl w-full max-h-full overflow-hidden',
+          'rounded-t-lg sm:rounded-lg',
+          'animate-slide-up sm:animate-fade-in',
           sizeClasses[size],
           className
         )}
@@ -70,13 +72,13 @@ export const Modal: React.FC<ModalProps> = ({
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-white sticky top-0 z-10">
+          <h2 id="modal-title" className="text-lg font-semibold text-gray-900 truncate pr-4">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+            className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2 sm:p-1 touch-manipulation flex-shrink-0"
             aria-label="Close modal"
           >
             <svg
@@ -96,7 +98,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
         
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-8rem)]">
           {children}
         </div>
       </div>

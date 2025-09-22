@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Input, TextArea, Select } from '../ui';
+import { Button, Input, TextArea, Select, MobileForm, MobileFormActions } from '../ui';
 import { PositionFormData, PositionStatus, Position } from '../../types';
 
 interface PositionFormProps {
@@ -116,23 +116,24 @@ export const PositionForm: React.FC<PositionFormProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm ${className}`}>
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
-        {/* Form Header */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {position ? 'Edit Position' : 'Create New Position'}
-          </h2>
-          {!position && isDirty && (
-            <button
-              type="button"
-              onClick={clearDraft}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Clear Draft
-            </button>
-          )}
-        </div>
+    <div className={`bg-white rounded-lg shadow-sm p-4 sm:p-6 ${className}`}>
+      {/* Form Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-2 sm:space-y-0">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+          {position ? 'Edit Position' : 'Create New Position'}
+        </h2>
+        {!position && isDirty && (
+          <button
+            type="button"
+            onClick={clearDraft}
+            className="text-sm text-gray-500 hover:text-gray-700 self-start sm:self-auto"
+          >
+            Clear Draft
+          </button>
+        )}
+      </div>
+
+      <MobileForm onSubmit={handleSubmit(onFormSubmit)}>
 
         {/* Job Title */}
         <div>
@@ -177,7 +178,7 @@ export const PositionForm: React.FC<PositionFormProps> = ({
         </div>
 
         {/* Location and Salary Range Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <Input
               label="Location"
@@ -207,7 +208,7 @@ export const PositionForm: React.FC<PositionFormProps> = ({
         </div>
 
         {/* Status and Application Date Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div>
             <Select
               label="Status"
@@ -262,12 +263,13 @@ export const PositionForm: React.FC<PositionFormProps> = ({
         </div>
 
         {/* Form Actions */}
-        <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+        <MobileFormActions sticky className="pt-6 border-t border-gray-200">
           <Button
             type="button"
             variant="secondary"
             onClick={handleCancel}
             disabled={loading || isSubmitting}
+            className="flex-1 sm:flex-none"
           >
             Cancel
           </Button>
@@ -276,6 +278,7 @@ export const PositionForm: React.FC<PositionFormProps> = ({
             variant="primary"
             loading={loading || isSubmitting}
             disabled={loading || isSubmitting}
+            className="flex-1 sm:flex-none"
           >
             {loading || isSubmitting
               ? position
@@ -285,18 +288,18 @@ export const PositionForm: React.FC<PositionFormProps> = ({
               ? 'Update Position'
               : 'Create Position'}
           </Button>
-        </div>
+        </MobileFormActions>
 
         {/* Draft indicator */}
         {!position && isDirty && (
-          <div className="text-sm text-gray-500 text-center">
+          <div className="text-sm text-gray-500 text-center pb-4">
             <span className="inline-flex items-center">
               <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
               Draft saved automatically
             </span>
           </div>
         )}
-      </form>
+      </MobileForm>
     </div>
   );
 };

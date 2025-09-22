@@ -127,30 +127,30 @@ export const PositionCard: React.FC<PositionCardProps> = ({
   return (
     <div
       className={cn(
-        'bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-pointer',
+        'bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md active:shadow-lg transition-all duration-200 cursor-pointer touch-manipulation',
         className
       )}
       onClick={handleCardClick}
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-100">
+      <div className="p-3 sm:p-4 border-b border-gray-100">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">
+          <div className="flex-1 min-w-0 pr-2">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
               {position.title}
             </h3>
             <div className="flex items-center space-x-2 mt-1">
-              <BuildingOfficeIcon className="h-4 w-4 text-gray-400" />
+              <BuildingOfficeIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
               <span className="text-sm text-gray-600 truncate">{position.company}</span>
             </div>
             {position.location && (
               <div className="flex items-center space-x-2 mt-1">
-                <MapPinIcon className="h-4 w-4 text-gray-400" />
+                <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
                 <span className="text-sm text-gray-500 truncate">{position.location}</span>
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2 ml-4">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <StatusBadge status={position.status} size="sm" />
             <div className="relative">
               <button
@@ -158,7 +158,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                   e.stopPropagation();
                   setShowMenu(!showMenu);
                 }}
-                className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                className="p-2 sm:p-1 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
               >
                 <EllipsisVerticalIcon className="h-5 w-5 text-gray-400" />
               </button>
@@ -170,7 +170,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onEdit(position);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                   >
                     Edit Position
                   </button>
@@ -180,7 +180,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onAddInterview(position.id);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 touch-manipulation"
                   >
                     Add Interview
                   </button>
@@ -190,7 +190,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                       setShowMenu(false);
                       onDelete(position.id);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="block w-full text-left px-4 py-3 sm:py-2 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 touch-manipulation"
                   >
                     Delete Position
                   </button>
@@ -202,21 +202,21 @@ export const PositionCard: React.FC<PositionCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Application Date and Salary */}
-        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm text-gray-500 mb-3 space-y-1 sm:space-y-0">
           <div className="flex items-center space-x-1">
-            <CalendarIcon className="h-4 w-4" />
+            <CalendarIcon className="h-4 w-4 flex-shrink-0" />
             <span>Applied {format(applicationDate, 'MMM d, yyyy')}</span>
           </div>
           {position.salary_range && (
-            <span className="font-medium text-gray-700">{position.salary_range}</span>
+            <span className="font-medium text-gray-700 text-xs sm:text-sm">{position.salary_range}</span>
           )}
         </div>
 
         {/* Description */}
         {position.description && (
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+          <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
             {position.description}
           </p>
         )}
@@ -225,7 +225,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <UserGroupIcon className="h-4 w-4 text-gray-400" />
+              <UserGroupIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
               <span className="text-sm font-medium text-gray-700">
                 Interviews ({totalInterviews})
               </span>
@@ -238,10 +238,11 @@ export const PositionCard: React.FC<PositionCardProps> = ({
                   e.stopPropagation();
                   handleAddInterview();
                 }}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
-                Add Interview
+                <span className="hidden sm:inline">Add Interview</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             )}
           </div>
@@ -263,7 +264,7 @@ export const PositionCard: React.FC<PositionCardProps> = ({
               All interviews completed
             </div>
           ) : (
-            <div className="text-sm text-gray-400 py-2 text-center border-2 border-dashed border-gray-200 rounded-md">
+            <div className="text-sm text-gray-400 py-3 sm:py-2 text-center border-2 border-dashed border-gray-200 rounded-md">
               No interviews scheduled
             </div>
           )}

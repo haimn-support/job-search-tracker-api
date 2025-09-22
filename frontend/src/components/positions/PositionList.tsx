@@ -1,7 +1,10 @@
 import React from 'react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { Position, PositionFilters } from '../../types';
 import { Button } from '../ui';
+import { SwipeableCard } from '../ui/SwipeableCard';
+import { PullToRefresh } from '../ui/PullToRefresh';
+import { MobileListSkeleton } from '../ui/MobileLoadingStates';
 import { PositionCard } from './PositionCard';
 import { FilterBar } from './FilterBar';
 import { NoResultsState } from './NoResultsState';
@@ -18,32 +21,14 @@ interface PositionListProps {
   onDeletePosition: (id: string) => void;
   onAddInterview: (positionId: string) => void;
   onViewDetails: (id: string) => void;
+  onRefresh?: () => Promise<void> | void;
   showFilters?: boolean;
   className?: string;
 }
 
 const LoadingSkeleton: React.FC = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {Array.from({ length: 6 }).map((_, index) => (
-      <div
-        key={index}
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse"
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-1"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-          <div className="h-6 w-16 bg-gray-200 rounded-full"></div>
-        </div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-full"></div>
-          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          <div className="h-8 bg-gray-100 rounded mt-4"></div>
-        </div>
-      </div>
-    ))}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+    <MobileListSkeleton count={6} />
   </div>
 );
 
@@ -119,6 +104,7 @@ export const PositionList: React.FC<PositionListProps> = ({
   onDeletePosition,
   onAddInterview,
   onViewDetails,
+  onRefresh,
   showFilters = true,
   className,
 }) => {
@@ -179,8 +165,8 @@ export const PositionList: React.FC<PositionListProps> = ({
     );
   }
 
-  return (
-    <div className={cn('space-y-6', className)}>
+  const content = (
+    <div className="space-y-6">
       {/* Filter Bar */}
       {showFilters && onFiltersChange && (
         <FilterBar
@@ -192,32 +178,47 @@ export const PositionList: React.FC<PositionListProps> = ({
       )}
 
       {/* Header with Create Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+        <div className="flex-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
             Your Positions ({positions.length})
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             Track and manage your job applications
           </p>
         </div>
-        <Button onClick={onCreateNew}>
+        <Button onClick={onCreateNew} className="w-full sm:w-auto">
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Position
         </Button>
       </div>
 
       {/* Position Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {positions.map((position) => (
-          <PositionCard
+          <SwipeableCard
             key={position.id}
-            position={position}
-            onEdit={onEditPosition}
-            onDelete={onDeletePosition}
-            onAddInterview={onAddInterview}
-            onViewDetails={onViewDetails}
-          />
+            leftAction={{
+              icon: <PencilIcon className="h-5 w-5" />,
+              label: 'Edit',
+              color: 'blue',
+              action: () => onEditPosition(position),
+            }}
+            rightAction={{
+              icon: <CalendarIcon className="h-5 w-5" />,
+              label: 'Interview',
+              color: 'green',
+              action: () => onAddInterview(position.id),
+            }}
+          >
+            <PositionCard
+              position={position}
+              onEdit={onEditPosition}
+              onDelete={onDeletePosition}
+              onAddInterview={onAddInterview}
+              onViewDetails={onViewDetails}
+            />
+          </SwipeableCard>
         ))}
       </div>
 
@@ -228,6 +229,18 @@ export const PositionList: React.FC<PositionListProps> = ({
             Showing {positions.length} position{positions.length !== 1 ? 's' : ''}
           </p>
         </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={cn('space-y-6', className)}>
+      {onRefresh ? (
+        <PullToRefresh onRefresh={onRefresh} className="min-h-screen">
+          {content}
+        </PullToRefresh>
+      ) : (
+        content
       )}
     </div>
   );

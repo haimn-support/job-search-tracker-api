@@ -15,7 +15,8 @@ export const PositionsPage: React.FC = () => {
   const { 
     data: positionsResponse, 
     isLoading: positionsLoading, 
-    error: positionsError
+    error: positionsError,
+    refetch: refetchPositions
   } = usePositions(filters);
 
   const positions = positionsResponse?.positions || [];
@@ -41,6 +42,10 @@ export const PositionsPage: React.FC = () => {
 
   const handleViewDetails = (id: string) => {
     navigate(`/positions/${id}`);
+  };
+
+  const handleRefresh = async () => {
+    await refetchPositions();
   };
 
   return (
@@ -76,6 +81,7 @@ export const PositionsPage: React.FC = () => {
               onDeletePosition={handleDeletePosition}
               onAddInterview={handleAddInterview}
               onViewDetails={handleViewDetails}
+              onRefresh={handleRefresh}
               showFilters={true}
             />
           </div>
