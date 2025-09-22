@@ -981,11 +981,11 @@ For detailed frontend documentation, see [`frontend/README.md`](frontend/README.
 
 ## Testing
 
-The project includes a comprehensive test suite with unit tests, integration tests, and complete user workflow tests.
+The project includes comprehensive test suites for both backend API and frontend application, ensuring reliability and quality across the entire stack.
 
-### Running Tests
+### Backend Testing
 
-**Run all tests:**
+**Run all backend tests:**
 ```bash
 pytest
 ```
@@ -1012,42 +1012,128 @@ pytest tests/test_user_workflows.py
 python scripts/run_tests.py
 ```
 
-### Test Categories
+#### Backend Test Categories
 
-#### Unit Tests
+**Unit Tests**
 - **Model Tests**: Database model validation and relationships
 - **Schema Tests**: Pydantic model validation and serialization
 - **Service Tests**: Business logic and data transformations
 - **Repository Tests**: Database operations with mocked connections
 - **Utility Tests**: Helper functions and middleware
 
-#### Integration Tests
+**Integration Tests**
 - **API Endpoint Tests**: Complete request/response cycles
 - **Database Integration**: Tests with real database connections
 - **Authentication Flow**: JWT generation and validation
 - **Error Handling**: Error scenarios and edge cases
 
-#### User Workflow Tests
+**User Workflow Tests**
 - **Complete Job Search Workflow**: End-to-end user journey from registration to statistics
 - **Position Lifecycle**: Full position management from creation to deletion
 - **Multi-User Data Isolation**: Verify users can only access their own data
 - **Error Handling Workflow**: Comprehensive error scenario testing
 
+### Frontend Testing
+
+The frontend features a robust testing infrastructure with 100+ tests covering all major functionality.
+
+**Run all frontend tests:**
+```bash
+cd frontend
+npm test
+```
+
+**Run with coverage report:**
+```bash
+cd frontend
+npm run test:coverage
+```
+
+**Run specific test files:**
+```bash
+cd frontend
+npm test -- Button.test.tsx
+```
+
+**Run tests in CI mode:**
+```bash
+cd frontend
+npm run test:ci
+```
+
+#### Frontend Test Categories
+
+**Unit Tests**
+- **Component Tests**: UI component behavior and rendering with React Testing Library
+- **Hook Tests**: Custom React hooks with various states and scenarios
+- **Service Tests**: API service methods with mock responses
+- **Utility Tests**: Pure function testing with edge cases
+
+**Integration Tests**
+- **User Workflow Tests**: Complete user journeys from login to task completion
+- **Component Interaction Tests**: Multi-component scenarios and data flow
+- **API Integration Tests**: End-to-end API communication with MSW mocking
+- **Error Handling Tests**: Error boundary and recovery mechanism testing
+
+**Accessibility Tests**
+- **WCAG 2.1 AA Compliance**: Automated accessibility rule checking with jest-axe
+- **Keyboard Navigation**: Tab order and keyboard interaction testing
+- **Screen Reader Support**: ARIA attributes and semantic HTML validation
+- **Focus Management**: Focus trap and restoration testing
+
+#### Frontend Testing Infrastructure
+
+**Testing Tools**:
+- **Jest** - Primary testing framework with custom configuration
+- **React Testing Library** - Component testing with user-centric approach
+- **jest-axe** - Automated accessibility testing
+- **MSW (Mock Service Worker)** - API mocking for integration tests
+- **User Event** - Realistic user interaction simulation
+
+**Custom Testing Utilities**:
+- **Enhanced Render Functions**: Render components with all necessary providers
+- **Mock Data Factories**: Generate realistic test data for positions, interviews, and users
+- **Custom Jest Matchers**: Domain-specific assertions for loading states, accessibility, and form validation
+- **Accessibility Testing Utilities**: Comprehensive WCAG compliance testing
+
+**Coverage Requirements**:
+- **70% minimum** coverage across branches, functions, lines, and statements
+- **Comprehensive test suite** with over 100 tests
+- **Quality gates** requiring tests to pass before deployment
+
 ### Test Configuration
 
-The test suite uses:
+#### Backend Test Configuration
+The backend test suite uses:
 - **In-Memory SQLite**: Fast, isolated database for each test
 - **Test Fixtures**: Comprehensive fixtures for users, positions, and interviews
 - **Authentication Helpers**: Pre-configured auth headers for testing
 - **Database Cleanup**: Automatic cleanup after each test
 
+#### Frontend Test Configuration
+The frontend test suite uses:
+- **jsdom Environment**: Browser-like environment for component testing
+- **Custom Test Providers**: QueryClient and AuthProvider setup for realistic testing
+- **Mock Service Worker**: API request interception and mocking
+- **Accessibility Testing**: Automated WCAG compliance checking
+
 ### Test Coverage
 
-The test suite provides comprehensive coverage of:
+#### Backend Coverage
+The backend test suite provides comprehensive coverage of:
 - All API endpoints and their variations
 - Authentication and authorization flows
 - Database operations and relationships
 - Error handling and edge cases
+
+#### Frontend Coverage
+The frontend test suite covers:
+- All UI components with user interaction testing
+- Complete authentication and authorization flows
+- Error handling and recovery mechanisms
+- Accessibility compliance and keyboard navigation
+- API integration with realistic mock scenarios
+- Form validation and submission workflows
 - Business logic and data validation
 - User workflows and integration scenarios
 

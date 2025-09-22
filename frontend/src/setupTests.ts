@@ -3,6 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import 'jest-axe/extend-expect';
 
 // Mock environment variables for tests
 Object.assign(process.env, {
@@ -16,3 +17,87 @@ Object.assign(process.env, {
   REACT_APP_CACHE_TIME: '600000',
   REACT_APP_ENVIRONMENT: 'test',
 });
+
+// Mock IntersectionObserver for tests
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {
+    return null;
+  }
+  disconnect() {
+    return null;
+  }
+  unobserve() {
+    return null;
+  }
+};
+
+// Mock ResizeObserver for tests
+global.ResizeObserver = class ResizeObserver {
+  constructor() {}
+  observe() {
+    return null;
+  }
+  disconnect() {
+    return null;
+  }
+  unobserve() {
+    return null;
+  }
+};
+
+// Mock matchMedia for tests
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock scrollTo for tests
+Object.defineProperty(window, 'scrollTo', {
+  writable: true,
+  value: jest.fn(),
+});
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
+
+// Mock sessionStorage
+const sessionStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
+});
+
+// Mock crypto.randomUUID for tests
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
+  },
+});
+
+// Setup MSW server for API mocking
+// import './test-utils/mocks/server';
+
+// Import custom matchers
+import './test-utils/custom-matchers';
