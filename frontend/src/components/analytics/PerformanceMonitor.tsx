@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { performanceConfig } from '../../config/performance';
+import { getConfig } from '../../config/environment';
 
 interface PerformanceMonitorProps {
   onMetric?: (metric: any) => void;
@@ -7,14 +9,21 @@ interface PerformanceMonitorProps {
 
 export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ onMetric }) => {
   useEffect(() => {
+    const config = getConfig();
+    
     const handleMetric = (metric: any) => {
+      // Apply sampling
+      if (Math.random() > performanceConfig.sampleRate) {
+        return;
+      }
+
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (config.debug) {
         console.log('Web Vital:', metric);
       }
 
-      // Send to analytics service in production
-      if (process.env.NODE_ENV === 'production' && onMetric) {
+      // Send to analytics service
+      if (performanceConfig.enableWebVitals && onMetric) {
         onMetric(metric);
       }
 

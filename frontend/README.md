@@ -867,6 +867,142 @@ open coverage/lcov-report/index.html
 - **Regression Prevention**: Tests preventing feature breaks
 - **Documentation Value**: Tests as living documentation
 
+## Production Build & Optimization
+
+### 🚀 **Advanced Build System**
+
+The application features a comprehensive production build optimization system designed for maximum performance, reliability, and maintainability.
+
+#### **Build Optimization Features**
+- **CRACO Configuration**: Custom webpack configuration with advanced optimization
+- **Code Splitting**: Intelligent chunk splitting for vendors, React, charts, and common code
+- **Tree Shaking**: Automatic dead code elimination with `usedExports` and `sideEffects: false`
+- **Bundle Optimization**: Optimized chunk strategy with automatic code splitting
+- **Compression**: Gzip compression for all assets with configurable thresholds
+
+#### **Service Worker & Caching**
+- **Workbox Integration**: Automatic service worker generation with runtime caching
+- **Smart Caching Strategies**: 
+  - Cache-first for fonts and images (365-day expiration)
+  - Stale-while-revalidate for static resources
+  - Network-first for API calls (5-minute expiration)
+- **Offline Support**: Graceful degradation and cache management
+- **Update Management**: Automatic updates with user notifications
+
+#### **Environment-Specific Configuration**
+- **Environment Files**: Separate configs for development, staging, and production
+- **Type-Safe Configuration**: Comprehensive environment management system
+- **Feature Flags**: Environment-based feature toggles
+- **API Configuration**: Environment-specific API settings and timeouts
+
+#### **Build Analysis & Monitoring**
+- **Bundle Analyzer**: Webpack bundle analyzer integration
+- **Size Monitoring**: Automated bundle size checks with limits
+- **Performance Budgets**: Enforced size limits (500kB JS, 50kB CSS, 600kB total)
+- **Optimization Scripts**: Comprehensive build optimization automation
+
+### 📊 **Build Commands**
+
+#### **Development**
+```bash
+npm start              # Start development server with CRACO
+npm run start:wsl      # Start with WSL configuration
+```
+
+#### **Production Builds**
+```bash
+npm run build                    # Standard production build
+npm run build:production         # Production build without source maps
+npm run build:staging           # Staging environment build
+npm run build:analyze           # Build with bundle analysis
+```
+
+#### **Analysis and Optimization**
+```bash
+npm run analyze                  # Basic bundle analysis
+npm run analyze:detailed         # Detailed webpack analysis
+npm run bundle-size             # Check bundle size limits
+npm run optimize                # Run all optimization steps
+npm run optimize:analyze        # Analyze bundle composition
+npm run optimize:check-size     # Check size against limits
+npm run optimize:clean         # Clean build directory
+```
+
+#### **Preview**
+```bash
+npm run preview                 # Preview standard build
+npm run preview:production      # Preview production build
+```
+
+### 🔧 **Build Configuration**
+
+#### **CRACO Configuration (`craco.config.js`)**
+- Custom webpack configuration for enhanced optimization
+- Automatic code splitting with vendor, common, and feature-specific chunks
+- Tree shaking enabled for unused code elimination
+- Optimized chunk splitting strategy
+
+#### **Environment Configuration**
+```bash
+# Development
+.env.development     # Debug mode, source maps, dev tools
+
+# Staging  
+.env.staging         # Production-like optimizations, performance monitoring
+
+# Production
+.env.production      # Maximum optimization, no source maps, error logging only
+```
+
+#### **Bundle Size Limits**
+- **JavaScript Bundle**: 500 kB (gzipped)
+- **CSS Bundle**: 50 kB (gzipped)  
+- **Total Bundle Size**: 600 kB (gzipped)
+
+### ⚡ **Performance Optimizations**
+
+#### **Production Optimizations**
+- **Minification**: Terser plugin with aggressive optimization
+- **Compression**: Gzip compression for all assets
+- **Console Removal**: Automatic console.log removal
+- **Source Maps**: Disabled in production for security
+- **Dead Code Elimination**: Unused code removal
+
+#### **Development Optimizations**
+- **Source Maps**: Enabled for debugging
+- **Hot Reload**: Fast refresh for development
+- **Vendor Splitting**: Separate vendor chunks for faster rebuilds
+
+### 📈 **Performance Monitoring**
+
+#### **Core Web Vitals**
+- **LCP** (Largest Contentful Paint)
+- **FID** (First Input Delay)  
+- **CLS** (Cumulative Layout Shift)
+- **FCP** (First Contentful Paint)
+- **TTFB** (Time to First Byte)
+
+#### **Custom Metrics**
+- Page load time
+- DOM content loaded time
+- Resource timing
+- User timing
+- Long task monitoring
+
+### 🛠️ **Build Tools & Scripts**
+
+#### **Optimization Script (`scripts/build-optimize.sh`)**
+- Comprehensive build optimization automation
+- Bundle size analysis and reporting
+- Performance monitoring and reporting
+- Environment-specific build management
+
+#### **Bundle Analysis Tools**
+- Webpack Bundle Analyzer integration
+- Bundle size monitoring with bundlesize
+- Performance budget enforcement
+- Dependency analysis and optimization recommendations
+
 ## Performance
 
 ### Optimization Features

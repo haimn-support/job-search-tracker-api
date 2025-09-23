@@ -34,9 +34,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "HOST=0.0.0.0 react-scripts start",
-    "start:wsl": "HOST=0.0.0.0 PORT=3000 react-scripts start",
-    "build": "react-scripts build",
+    "start": "HOST=0.0.0.0 craco start",
+    "start:wsl": "HOST=0.0.0.0 PORT=3000 craco start",
+    "build": "craco build",
+    "build:analyze": "ANALYZE=true npm run build",
+    "build:production": "GENERATE_SOURCEMAP=false craco build",
+    "build:staging": "REACT_APP_ENV=staging craco build",
     "test": "react-scripts test --watchAll=false --passWithNoTests",
     "test:watch": "react-scripts test",
     "test:coverage": "react-scripts test --coverage --watchAll=false --passWithNoTests",
@@ -49,8 +52,15 @@
     "format:check": "prettier --check src/**/*.{ts,tsx,js,jsx,json,css,md}",
     "type-check": "tsc --noEmit",
     "analyze": "npm run build && npx bundle-analyzer build/static/js/*.js",
+    "analyze:detailed": "npm run build:analyze",
+    "bundle-size": "npm run build && npx bundlesize",
+    "optimize": "./scripts/build-optimize.sh all",
+    "optimize:analyze": "./scripts/build-optimize.sh analyze",
+    "optimize:check-size": "./scripts/build-optimize.sh check-size",
+    "optimize:clean": "./scripts/build-optimize.sh clean",
     "dev": "npm run start:wsl",
-    "preview": "npm run build && npx serve -s build"
+    "preview": "npm run build && npx serve -s build",
+    "preview:production": "npm run build:production && npx serve -s build"
   },
   "eslintConfig": {
     "extends": [
@@ -71,17 +81,25 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@tailwindcss/forms": "^0.5.3",
     "@testing-library/jest-dom": "^6.8.0",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
+    "bundlesize": "^0.18.2",
+    "compression-webpack-plugin": "^10.0.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "jest-axe": "^10.0.0",
     "jest-transform-css": "^6.0.3",
     "msw": "^2.11.3",
     "prettier": "^2.8.8",
-    "whatwg-fetch": "^3.6.20"
+    "terser-webpack-plugin": "^5.3.9",
+    "webpack": "^5.88.2",
+    "webpack-bundle-analyzer": "^4.9.1",
+    "whatwg-fetch": "^3.6.20",
+    "workbox-webpack-plugin": "^7.0.0",
+    "workbox-window": "^7.0.0"
   },
   "proxy": "http://localhost:8000"
 }
