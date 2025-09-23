@@ -1,41 +1,19 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgresql-pvc
-  namespace: interview-tracker
-  labels:
-    app: interview-position-tracker
-    component: database
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: standard  # Adjust based on your cluster
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgresql
   namespace: interview-tracker
   labels:
-    app: interview-position-tracker
-    component: database
+    app: postgresql
 spec:
   replicas: 1
-  strategy:
-    type: Recreate  # Important for databases with persistent storage
   selector:
     matchLabels:
-      app: interview-position-tracker
-      component: database
+      app: postgresql
   template:
     metadata:
       labels:
-        app: interview-position-tracker
-        component: database
+        app: postgresql
     spec:
       containers:
       - name: postgresql
@@ -44,20 +22,14 @@ spec:
         - containerPort: 5432
         env:
         - name: POSTGRES_DB
-          valueFrom:
-            configMapKeyRef:
-              name: interview-tracker-config
-              key: POSTGRES_DB
+          value: "interview_tracker"
         - name: POSTGRES_USER
-          valueFrom:
-            configMapKeyRef:
-              name: interview-tracker-config
-              key: POSTGRES_USER
+          value: "postgres"
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: interview-tracker-secrets
-              key: POSTGRES_PASSWORD
+              key: postgres-password
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
         volumeMounts:
@@ -98,20 +70,17 @@ spec:
       - name: postgresql-storage
         persistentVolumeClaim:
           claimName: postgresql-pvc
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql-service
+  name: postgresql
   namespace: interview-tracker
   labels:
-    app: interview-position-tracker
-    component: database
+    app: postgresql
 spec:
   selector:
-    app: interview-position-tracker
-    component: database
+    app: postgresql
   ports:
   - port: 5432
     targetPort: 5432

@@ -4,4 +4,4 @@ metadata:
   name: interview-tracker
   labels:
     name: interview-tracker
-    app: interview-position-tracker
+    environment: production

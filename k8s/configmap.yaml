@@ -3,21 +3,48 @@ kind: ConfigMap
 metadata:
   name: interview-tracker-config
   namespace: interview-tracker
-  labels:
-    app: interview-position-tracker
 data:
-  # Application configuration
-  ENVIRONMENT: "production"
-  DEBUG: "false"
-  TESTING: "false"
-  LOG_LEVEL: "INFO"
-  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  # Application Configuration
+  REACT_APP_ENV: "production"
+  REACT_APP_API_URL: "https://api.interview-tracker.com"
+  REACT_APP_APP_NAME: "Interview Position Tracker"
+  REACT_APP_VERSION: "1.0.0"
+  REACT_APP_DEBUG: "false"
+  REACT_APP_ENABLE_DEVTOOLS: "false"
+  REACT_APP_LOG_LEVEL: "error"
+  GENERATE_SOURCEMAP: "false"
+  
+  # Database Configuration
+  DATABASE_URL: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgresql:5432/interview_tracker"
+  
+  # Security Configuration
+  ACCESS_TOKEN_EXPIRE_MINUTES: "15"
   ALGORITHM: "HS256"
+  
+  # CORS Configuration
+  BACKEND_CORS_ORIGINS: '["https://interview-tracker.com"]'
+  
+  # Logging Configuration
+  LOG_LEVEL: "WARNING"
+  
+  # Health Check Configuration
   HEALTH_CHECK_ENABLED: "true"
   
-  # CORS configuration
-  BACKEND_CORS_ORIGINS: '["https://your-frontend-domain.com"]'
+  # Performance Configuration
+  WORKERS: "4"
+  MAX_CONNECTIONS: "100"
+  TIMEOUT: "30"
   
-  # Database configuration (non-sensitive)
-  POSTGRES_DB: "interview_tracker"
-  POSTGRES_USER: "postgres"
+  # Cache Configuration
+  REDIS_URL: "redis://redis:6379"
+  CACHE_TTL: "3600"
+  
+  # Monitoring Configuration
+  ENABLE_METRICS: "true"
+  METRICS_PORT: "9090"
+  
+  # Feature Flags
+  ENABLE_REGISTRATION: "true"
+  ENABLE_EMAIL_NOTIFICATIONS: "true"
+  ENABLE_ANALYTICS: "true"
+  ENABLE_ERROR_TRACKING: "true"

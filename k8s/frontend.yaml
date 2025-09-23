@@ -1,0 +1,136 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: interview-tracker
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: ghcr.io/your-username/job-search-tracker-api-frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_ENV
+        - name: REACT_APP_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_API_URL
+        - name: REACT_APP_APP_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_APP_NAME
+        - name: REACT_APP_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_VERSION
+        - name: REACT_APP_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_DEBUG
+        - name: REACT_APP_ENABLE_DEVTOOLS
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_ENABLE_DEVTOOLS
+        - name: REACT_APP_LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: REACT_APP_LOG_LEVEL
+        - name: GENERATE_SOURCEMAP
+          valueFrom:
+            configMapKeyRef:
+              name: interview-tracker-config
+              key: GENERATE_SOURCEMAP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: interview-tracker
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  namespace: interview-tracker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
