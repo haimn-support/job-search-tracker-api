@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 20Gi
-  storageClassName: gp2
+  storageClassName: standard
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -22,4 +22,4 @@ spec:
   resources:
     requests:
       storage: 5Gi
-  storageClassName: gp2
+  storageClassName: standard
