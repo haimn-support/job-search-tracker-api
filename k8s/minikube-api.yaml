@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: python:3.11-slim
+        image: haim9798/job-search-tracker-api:latest
         ports:
         - containerPort: 8000
         env:
@@ -42,11 +42,11 @@ spec:
               name: interview-tracker-config
               key: ALGORITHM
         - name: ENVIRONMENT
-          value: "development"
+          value: "testing"
         - name: DEBUG
           value: "true"
         - name: TESTING
-          value: "false"
+          value: "true"
         - name: BACKEND_CORS_ORIGINS
           valueFrom:
             configMapKeyRef:
@@ -67,12 +67,6 @@ spec:
             configMapKeyRef:
               name: interview-tracker-config
               key: REDIS_URL
-        command: ["/bin/bash"]
-        args: ["-c", "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
-        workingDir: /app
-        volumeMounts:
-        - name: app-code
-          mountPath: /app
         livenessProbe:
           httpGet:
             path: /health
@@ -96,11 +90,6 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-      volumes:
-      - name: app-code
-        hostPath:
-          path: /home/haim/github/job-search-tracker-api
-          type: Directory
 ---
 apiVersion: v1
 kind: Service
@@ -115,5 +104,6 @@ spec:
   ports:
   - port: 8000
     targetPort: 8000
+    nodePort: 30080
     protocol: TCP
-  type: ClusterIP
+  type: NodePort

@@ -4,9 +4,9 @@ metadata:
   name: interview-tracker-config
   namespace: interview-tracker
 data:
-  # Application Configuration for Minikube
-  REACT_APP_ENV: "development"
-  REACT_APP_API_URL: "http://api.interview-tracker.local"
+  # Application Configuration for Minikube Testing
+  REACT_APP_ENV: "testing"
+  REACT_APP_API_URL: "http://$(minikube ip):30080"
   REACT_APP_APP_NAME: "Interview Position Tracker"
   REACT_APP_VERSION: "1.0.0"
   REACT_APP_DEBUG: "true"
@@ -15,14 +15,14 @@ data:
   GENERATE_SOURCEMAP: "true"
   
   # Database Configuration
-  DATABASE_URL: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgresql:5432/interview_tracker"
+  DATABASE_URL: "postgresql://postgres:YUr6KVb1ky0HWejGPFPPKIYE@postgresql:5432/interview_tracker"
   
   # Security Configuration
   ACCESS_TOKEN_EXPIRE_MINUTES: "60"
   ALGORITHM: "HS256"
   
-  # CORS Configuration
-  BACKEND_CORS_ORIGINS: '["http://interview-tracker.local", "http://localhost:3000"]'
+  # CORS Configuration for Testing
+  BACKEND_CORS_ORIGINS: '["http://localhost:3000", "http://localhost:3001", "http://$(minikube ip):30080"]'
   
   # Logging Configuration
   LOG_LEVEL: "DEBUG"
