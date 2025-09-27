@@ -95,6 +95,27 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 curl http://localhost:8000/health
 ```
 
+### HTTPS with Docker Compose
+
+For local HTTPS via Nginx reverse proxy:
+
+```bash
+# Generate self-signed certs (valid for localhost)
+./scripts/generate-dev-certs.sh
+
+# Start stack with production compose (includes nginx on 80/443)
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Test HTTPS
+curl -k https://localhost/health
+```
+
+Notes:
+- Backend runs on `uvicorn` with `--proxy-headers` enabled; FastAPI also has `ProxyHeadersMiddleware`.
+- Nginx listens on 80 and 443, redirects HTTP to HTTPS, and proxies to `api:8000`.
+- Place real certificates into `nginx/ssl/cert.pem` and `nginx/ssl/key.pem` for production.
+- Update `BACKEND_CORS_ORIGINS` to include your HTTPS frontend origin(s).
+
 ## Kubernetes
 
 ### Prerequisites
@@ -134,11 +155,11 @@ echo -n "your-database-password" | base64
 # Update k8s/secret.yaml with encoded values
 ```
 
-**3. Configure Domain (Optional):**
+**3. Configure Domain and TLS:**
 ```bash
 # Edit k8s/api-service.yaml
 # Update host: api.your-domain.com
-# Configure TLS if needed
+# Uncomment the tls section and set secretName; ensure cert-manager or your ingress handles the secret
 ```
 
 ### Deployment
@@ -154,6 +175,13 @@ echo -n "your-database-password" | base64
 # View logs
 ./scripts/deploy-k8s.sh logs
 ```
+
+### HTTPS with Kubernetes
+
+TLS is terminated at the Ingress. Ensure:
+- `k8s/ingress.yaml` has your hosts under `spec.tls.hosts` and a `secretName`.
+- You have `cert-manager` with a ClusterIssuer (e.g., `letsencrypt-prod`) and the corresponding annotation on the Ingress.
+- Alternatively, create the TLS secret manually if not using cert-manager.
 
 **Manual Deployment:**
 ```bash

@@ -99,6 +99,7 @@ app.add_exception_handler(Exception, generic_exception_handler)
 # Add user context middleware
 app.middleware("http")(user_context_middleware)
 
+
 # Add CORS middleware
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(

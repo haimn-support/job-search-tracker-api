@@ -5,9 +5,9 @@ A comprehensive REST API backend for tracking job positions and interview progre
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9+
+- Python 3.11+
 - PostgreSQL database (local or cloud)
-- Docker (optional, for containerized deployment)
+- Docker Desktop or Docker Engine with Compose plugin
 
 ### Installation
 
@@ -48,10 +48,13 @@ The API will be available at `http://localhost:8000`
 
 ## 📚 API Documentation
 
-Once the server is running, you can access:
+Once the server is running directly (without Nginx), you can access:
 - **Interactive API docs**: `http://localhost:8000/docs`
 - **ReDoc documentation**: `http://localhost:8000/redoc`
 - **OpenAPI schema**: `http://localhost:8000/openapi.json`
+
+When running behind Nginx with HTTPS (see below), use:
+- Docs: `https://localhost/docs` (self-signed in development)
 
 ## 🔗 Related Projects
 
@@ -118,15 +121,46 @@ This API is built with a modern, scalable architecture:
 docker build -t job-search-tracker-api .
 ```
 
-2. **Run with Docker Compose:**
+2. **Run with Docker Compose (development stack):**
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 3. **Run standalone container:**
 ```bash
 docker run -p 8000:8000 job-search-tracker-api
 ```
+
+### HTTPS with Docker Compose
+
+This repository includes an Nginx reverse proxy that can terminate TLS for local development.
+
+1) Generate a self-signed certificate (writes to `nginx/ssl/cert.pem` and `nginx/ssl/key.pem`):
+```bash
+./scripts/generate-dev-certs.sh
+```
+
+2) Start the stack with the production override (includes Nginx on ports 80/443):
+```bash
+export POSTGRES_PASSWORD=postgres
+export SECRET_KEY=dev-secret-change-me
+export BACKEND_CORS_ORIGINS='["https://localhost","http://localhost:3000"]'
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+3) Verify HTTPS:
+```bash
+# Health (use GET; HEAD returns 405)
+curl -k https://localhost/health
+
+# Docs
+open https://localhost/docs  # or just visit in a browser
+```
+
+Notes:
+- Backend runs with `uvicorn --proxy-headers`, and Nginx proxies to `api:8000`.
+- HTTP is redirected to HTTPS (except `/health` is optionally allowed in HTTP).
+- Update `BACKEND_CORS_ORIGINS` to include your HTTPS frontend origin(s).
 
 ### Docker Hub
 
