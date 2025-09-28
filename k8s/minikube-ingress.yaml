@@ -8,6 +8,7 @@ spec:
   tls:
   - hosts:
     - api.minikube.local
+    - app.minikube.local
     secretName: minikube-tls
   rules:
   - host: api.minikube.local
@@ -20,4 +21,15 @@ spec:
             name: api
             port:
               number: 8000
+
+  - host: app.minikube.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 3000
 

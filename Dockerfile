@@ -1,4 +1,10 @@
 # Multi-stage Dockerfile for Interview Position Tracker API
+
+# Build arguments
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION=latest
+
 # Stage 1: Build stage
 FROM python:3.11-slim as builder
 
@@ -60,6 +66,15 @@ COPY --chown=appuser:appuser . .
 
 # Switch to non-root user
 USER appuser
+
+# Add labels for build information
+LABEL org.opencontainers.image.title="Job Search Tracker API" \
+      org.opencontainers.image.description="FastAPI backend for job search tracking application" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.vendor="Haim Natan" \
+      org.opencontainers.image.url="https://github.com/haim9798/job-search-tracker-api"
 
 # Expose port
 EXPOSE 8000

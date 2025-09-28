@@ -2,6 +2,8 @@
 Main FastAPI application entry point.
 """
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
+from fastapi.openapi.docs import get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
@@ -86,6 +88,8 @@ app = FastAPI(
             "description": "API health checks and system status"
         }
     ]
+    ,
+    docs_url=None  # We'll serve Swagger UI using local assets to avoid CSP/CDN issues
 )
 
 # Register exception handlers
@@ -144,3 +148,49 @@ async def shutdown_event():
 @app.get("/")
 async def root():
     return {"message": "Interview Position Tracker API"}
+
+# Serve static assets (Swagger UI files are placed under /app/static by Dockerfile)
+app.mount("/static", StaticFiles(directory="/app/static"), name="static")
+
+# Custom Swagger UI served with local assets to satisfy strict CSP
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset=\"utf-8\"/>
+    <title>{app.title} - Swagger UI</title>
+    <link rel=\"stylesheet\" type=\"text/css\" href=\"/static/swagger/swagger-ui.css\" />
+    </head>
+    <body>
+    <div id=\"swagger-ui\"></div>
+    <script src=\"/static/swagger/swagger-ui-bundle.js\"></script>
+    <script src=\"/static/swagger/swagger-ui-standalone-preset.js\"></script>
+    <script>
+    window.addEventListener('load', function() {{
+      const ui = SwaggerUIBundle({{
+        url: '{app.openapi_url}',
+        dom_id: '#swagger-ui',
+        layout: 'BaseLayout',
+        deepLinking: true,
+        showExtensions: true,
+        showCommonExtensions: true,
+        oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ]
+      }});
+      window.ui = ui;
+    }});
+    </script>
+    </body>
+    </html>
+    """
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html_content)
+
+@app.get("/docs/oauth2-redirect", include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
