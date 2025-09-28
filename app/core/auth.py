@@ -23,6 +23,7 @@ pwd_context = CryptContext(
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a plain password against its hash.
+    Supports both bcrypt (legacy) and pbkdf2_sha256 (new) hashes.
     
     Args:
         plain_password: The plain text password
@@ -31,8 +32,32 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    # pbkdf2_sha256 doesn't have the 72-byte limitation of bcrypt
-    return pwd_context.verify(plain_password, hashed_password)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Try pbkdf2_sha256 first (new format)
+    try:
+        if pwd_context.verify(plain_password, hashed_password):
+            return True
+    except Exception as e:
+        logger.debug(f"pbkdf2_sha256 verification failed: {e}")
+    
+    # Try bcrypt (legacy format) if pbkdf2_sha256 fails
+    try:
+        from passlib.context import CryptContext
+        bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        
+        # Truncate password for bcrypt if needed
+        if len(plain_password.encode('utf-8')) > 72:
+            plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+        
+        if bcrypt_context.verify(plain_password, hashed_password):
+            logger.info("Successfully verified legacy bcrypt hash, consider rehashing")
+            return True
+    except Exception as e:
+        logger.debug(f"bcrypt verification failed: {e}")
+    
+    return False
 
 
 def get_password_hash(password: str) -> str:
