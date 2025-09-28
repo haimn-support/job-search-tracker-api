@@ -42,11 +42,20 @@ def get_password_hash(password: str) -> str:
     Returns:
         The hashed password
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Log password length for debugging
+    password_bytes = password.encode('utf-8')
+    password_length = len(password_bytes)
+    logger.info(f"Password length: {password_length} bytes, original length: {len(password)} chars")
+    
     # Truncate password to 72 bytes to avoid bcrypt limitation
     # bcrypt has a 72-byte limit for passwords
-    # Force deployment - ensure this fix is deployed
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    if password_length > 72:
+        logger.warning(f"Password exceeds 72 bytes, truncating from {password_length} to 72 bytes")
+        password = password_bytes[:72].decode('utf-8', errors='ignore')
+        logger.info(f"Truncated password length: {len(password.encode('utf-8'))} bytes")
     
     return pwd_context.hash(password)
 
