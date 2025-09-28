@@ -10,7 +10,14 @@ from .config import settings
 
 
 # Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Use bcrypt with explicit backend to avoid initialization issues
+pwd_context = CryptContext(
+    schemes=["bcrypt"], 
+    deprecated="auto",
+    bcrypt__default_rounds=12,
+    bcrypt__min_rounds=10,
+    bcrypt__max_rounds=15
+)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -57,7 +64,17 @@ def get_password_hash(password: str) -> str:
         password = password_bytes[:72].decode('utf-8', errors='ignore')
         logger.info(f"Truncated password length: {len(password.encode('utf-8'))} bytes")
     
-    return pwd_context.hash(password)
+    try:
+        return pwd_context.hash(password)
+    except ValueError as e:
+        if "password cannot be longer than 72 bytes" in str(e):
+            logger.error(f"Bcrypt still failing with 72-byte limit: {e}")
+            # Force truncation to 70 bytes to be safe
+            password = password.encode('utf-8')[:70].decode('utf-8', errors='ignore')
+            logger.info(f"Force truncating to 70 bytes: {len(password.encode('utf-8'))} bytes")
+            return pwd_context.hash(password)
+        else:
+            raise
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
