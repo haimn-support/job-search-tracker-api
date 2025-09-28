@@ -1,15 +1,16 @@
 # Render deployment configuration for backend API
 # This file should be placed in the root of your backend repository
 
-# Python version (use 3.11 for better compatibility)
-pythonVersion: 3.11
+# Use Docker deployment
+dockerfilePath: ./Dockerfile
 
-# Build command
+# Build command (for Docker)
 buildCommand: |
-  pip install -r requirements.txt
-  alembic upgrade head
+  docker build -t job-search-tracker-api .
+  # Run database migrations after container is built
+  docker run --rm -e DATABASE_URL=$DATABASE_URL job-search-tracker-api alembic upgrade head
 
-# Start command
+# Start command (Docker will use CMD from Dockerfile)
 startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
 
 # Environment variables (set these in Render dashboard)

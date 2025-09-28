@@ -38,6 +38,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# Pre-fetch Swagger UI assets for offline/local use (avoids CSP issues)
+RUN mkdir -p /app/static/swagger \
+    && curl -fsSL https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css -o /app/static/swagger/swagger-ui.css \
+    && curl -fsSL https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js -o /app/static/swagger/swagger-ui-bundle.js \
+    && curl -fsSL https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js -o /app/static/swagger/swagger-ui-standalone-preset.js
+
 # Create non-root user for security
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
@@ -58,9 +64,9 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Health check
+# Health check (use PORT env var for cloud platforms)
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Default command
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# Default command (use PORT env var for cloud platforms like Render)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips \"*\""]
