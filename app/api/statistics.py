@@ -20,6 +20,39 @@ from ..schemas.enums import PositionStatus
 router = APIRouter(prefix="/statistics", tags=["Statistics"])
 
 
+@router.get("/dashboard", response_model=StatisticsOverview)
+async def get_dashboard_statistics(
+    start_date: Optional[date] = Query(None, description="Filter start date"),
+    end_date: Optional[date] = Query(None, description="Filter end date"),
+    company: Optional[str] = Query(None, description="Filter by company name"),
+    status: Optional[PositionStatus] = Query(None, description="Filter by position status"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get dashboard statistics for the current user's job applications.
+    
+    This endpoint provides comprehensive metrics for the dashboard including:
+    - Total applications, companies, and interviews
+    - Response rate, interview rate, and offer rate
+    - Breakdowns by status, interview type, and interview outcome
+    
+    This is an alias for the overview endpoint for frontend compatibility.
+    """
+    # Create filters object if any filters are provided
+    filters = None
+    if any([start_date, end_date, company, status]):
+        filters = StatisticsFilters(
+            start_date=start_date,
+            end_date=end_date,
+            company=company,
+            status=status
+        )
+    
+    statistics_service = StatisticsService(db)
+    return statistics_service.get_overview_statistics(current_user.id, filters)
+
+
 @router.get("/overview", response_model=StatisticsOverview)
 async def get_overview_statistics(
     start_date: Optional[date] = Query(None, description="Filter start date"),

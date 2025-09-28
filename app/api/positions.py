@@ -217,6 +217,29 @@ async def update_position_status(
     return PositionResponse.model_validate(position)
 
 
+@router.patch("/{position_id}", response_model=PositionResponse)
+async def patch_position(
+    position_id: UUID,
+    position_data: PositionUpdate,
+    current_user_id: UUID = Depends(get_current_user_id),
+    position_repo: PositionRepository = Depends(get_position_repository)
+):
+    """
+    Partially update a specific position using PATCH method.
+    
+    Updates the position with the provided data if it exists and belongs to the authenticated user.
+    Only provided fields will be updated. This is an alias for the PUT endpoint for frontend compatibility.
+    """
+    position = position_repo.update(position_id, current_user_id, position_data)
+    if not position:
+        raise ResourceNotFoundException(
+            resource_type="Position",
+            resource_id=str(position_id)
+        )
+    
+    return PositionResponse.model_validate(position)
+
+
 @router.delete("/{position_id}", status_code=204)
 async def delete_position(
     position_id: UUID,
