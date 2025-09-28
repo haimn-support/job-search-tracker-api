@@ -10,13 +10,13 @@ from .config import settings
 
 
 # Password hashing context
-# Use bcrypt with explicit backend to avoid initialization issues
+# Use pbkdf2_sha256 instead of bcrypt to avoid initialization issues
 pwd_context = CryptContext(
-    schemes=["bcrypt"], 
+    schemes=["pbkdf2_sha256"], 
     deprecated="auto",
-    bcrypt__default_rounds=12,
-    bcrypt__min_rounds=10,
-    bcrypt__max_rounds=15
+    pbkdf2_sha256__default_rounds=29000,
+    pbkdf2_sha256__min_rounds=10000,
+    pbkdf2_sha256__max_rounds=100000
 )
 
 
@@ -31,17 +31,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    # Truncate password to 72 bytes to avoid bcrypt limitation
-    # bcrypt has a 72-byte limit for passwords
-    if len(plain_password.encode('utf-8')) > 72:
-        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    
+    # pbkdf2_sha256 doesn't have the 72-byte limitation of bcrypt
     return pwd_context.verify(plain_password, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     """
-    Hash a plain password.
+    Hash a plain password using pbkdf2_sha256.
     
     Args:
         password: The plain text password to hash
@@ -57,24 +53,12 @@ def get_password_hash(password: str) -> str:
     password_length = len(password_bytes)
     logger.info(f"Password length: {password_length} bytes, original length: {len(password)} chars")
     
-    # Truncate password to 72 bytes to avoid bcrypt limitation
-    # bcrypt has a 72-byte limit for passwords
-    if password_length > 72:
-        logger.warning(f"Password exceeds 72 bytes, truncating from {password_length} to 72 bytes")
-        password = password_bytes[:72].decode('utf-8', errors='ignore')
-        logger.info(f"Truncated password length: {len(password.encode('utf-8'))} bytes")
+    # pbkdf2_sha256 doesn't have the 72-byte limitation of bcrypt
+    # but we'll still log for debugging purposes
+    if password_length > 1000:  # Reasonable upper limit
+        logger.warning(f"Password is very long ({password_length} bytes), consider shorter passwords")
     
-    try:
-        return pwd_context.hash(password)
-    except ValueError as e:
-        if "password cannot be longer than 72 bytes" in str(e):
-            logger.error(f"Bcrypt still failing with 72-byte limit: {e}")
-            # Force truncation to 70 bytes to be safe
-            password = password.encode('utf-8')[:70].decode('utf-8', errors='ignore')
-            logger.info(f"Force truncating to 70 bytes: {len(password.encode('utf-8'))} bytes")
-            return pwd_context.hash(password)
-        else:
-            raise
+    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
