@@ -107,7 +107,8 @@ class AuthService:
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
-            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert to seconds
+            expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
+            user=user
         )
     
     def login_user(self, login_data: UserLogin) -> TokenResponse:
