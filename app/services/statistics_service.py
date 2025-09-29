@@ -84,8 +84,8 @@ class StatisticsService:
             interview_rate=interview_rate,
             offer_rate=offer_rate,
             positions_by_status=status_breakdown,
-            interview_type_breakdown=interview_type_breakdown,
-            interview_outcome_breakdown=interview_outcome_breakdown
+            interviews_by_type=interview_type_breakdown,
+            interviews_by_outcome=interview_outcome_breakdown
         )
     
     def get_timeline_statistics(

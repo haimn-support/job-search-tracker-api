@@ -17,8 +17,8 @@ class StatisticsOverview(BaseModel):
     offer_rate: float = Field(..., description="Percentage of applications that led to offers")
     
     positions_by_status: Dict[PositionStatus, int] = Field(..., description="Count by position status")
-    interview_type_breakdown: Dict[InterviewType, int] = Field(..., description="Count by interview type")
-    interview_outcome_breakdown: Dict[InterviewOutcome, int] = Field(..., description="Count by interview outcome")
+    interviews_by_type: Dict[InterviewType, int] = Field(..., description="Count by interview type")
+    interviews_by_outcome: Dict[InterviewOutcome, int] = Field(..., description="Count by interview outcome")
 
 
 class TimelineStatistics(BaseModel):
