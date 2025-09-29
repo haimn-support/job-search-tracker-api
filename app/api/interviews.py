@@ -26,6 +26,16 @@ from ..models.interview import InterviewOutcome
 router = APIRouter(tags=["Interviews"])
 
 
+def get_interview_repository(db: Session = Depends(get_db)) -> InterviewRepository:
+    """Dependency to get interview repository instance."""
+    return InterviewRepository(db)
+
+
+def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository:
+    """Dependency to get position repository instance."""
+    return PositionRepository(db)
+
+
 @router.get("/", response_model=list[InterviewResponse])
 async def get_all_interviews(
     current_user_id: UUID = Depends(get_current_user_id),
@@ -53,16 +63,6 @@ async def get_all_interviews(
             detail="Failed to retrieve interviews",
             operation="interview_listing_all"
         )
-
-
-def get_interview_repository(db: Session = Depends(get_db)) -> InterviewRepository:
-    """Dependency to get interview repository instance."""
-    return InterviewRepository(db)
-
-
-def get_position_repository(db: Session = Depends(get_db)) -> PositionRepository:
-    """Dependency to get position repository instance."""
-    return PositionRepository(db)
 
 
 def verify_interview_ownership(
