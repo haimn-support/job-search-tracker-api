@@ -463,3 +463,135 @@ class StatisticsService:
             status_breakdown=status_breakdown,
             success_rate=success_rate
         )
+    
+    def get_success_rates(self, user_id: UUID) -> Dict[str, float]:
+        """
+        Calculate success rate statistics for a user's job applications.
+        
+        Args:
+            user_id: The user ID to calculate statistics for
+            
+        Returns:
+            Dictionary with success rate metrics
+        """
+        # Get all positions for the user
+        positions = self.db.query(Position).filter(Position.user_id == user_id).all()
+        
+        if not positions:
+            return {
+                "application_to_interview_rate": 0.0,
+                "interview_to_offer_rate": 0.0,
+                "overall_success_rate": 0.0,
+                "average_interviews_per_position": 0.0
+            }
+        
+        total_applications = len(positions)
+        total_interviews = sum(len(pos.interviews) for pos in positions)
+        total_offers = sum(1 for pos in positions if pos.status == PositionStatus.OFFER)
+        
+        # Calculate rates
+        application_to_interview_rate = round((total_interviews / total_applications) * 100, 2) if total_applications > 0 else 0.0
+        interview_to_offer_rate = round((total_offers / total_interviews) * 100, 2) if total_interviews > 0 else 0.0
+        overall_success_rate = round((total_offers / total_applications) * 100, 2) if total_applications > 0 else 0.0
+        average_interviews_per_position = round(total_interviews / total_applications, 2) if total_applications > 0 else 0.0
+        
+        return {
+            "application_to_interview_rate": application_to_interview_rate,
+            "interview_to_offer_rate": interview_to_offer_rate,
+            "overall_success_rate": overall_success_rate,
+            "average_interviews_per_position": average_interviews_per_position
+        }
+    
+    def get_top_companies(self, user_id: UUID, limit: int = 10) -> List[Dict[str, any]]:
+        """
+        Get top performing companies based on success rates.
+        
+        Args:
+            user_id: The user ID to calculate statistics for
+            limit: Number of top companies to return
+            
+        Returns:
+            List of dictionaries with company performance metrics
+        """
+        # Get all positions for the user
+        positions = self.db.query(Position).filter(Position.user_id == user_id).all()
+        
+        if not positions:
+            return []
+        
+        # Group positions by company
+        company_stats = defaultdict(lambda: {
+            'applications': 0,
+            'interviews': 0,
+            'offers': 0
+        })
+        
+        for position in positions:
+            company = position.company
+            company_stats[company]['applications'] += 1
+            company_stats[company]['interviews'] += len(position.interviews)
+            if position.status == PositionStatus.OFFER:
+                company_stats[company]['offers'] += 1
+        
+        # Calculate success rates and sort
+        top_companies = []
+        for company, stats in company_stats.items():
+            success_rate = round((stats['offers'] / stats['applications']) * 100, 2) if stats['applications'] > 0 else 0.0
+            top_companies.append({
+                'company': company,
+                'applications': stats['applications'],
+                'interviews': stats['interviews'],
+                'offers': stats['offers'],
+                'success_rate': success_rate
+            })
+        
+        # Sort by success rate (descending) and then by applications (descending)
+        top_companies.sort(key=lambda x: (x['success_rate'], x['applications']), reverse=True)
+        
+        return top_companies[:limit]
+    
+    def get_monthly_statistics(self, user_id: UUID, year: int) -> List[Dict[str, any]]:
+        """
+        Get monthly statistics for a specific year.
+        
+        Args:
+            user_id: The user ID to calculate statistics for
+            year: The year to get statistics for
+            
+        Returns:
+            List of dictionaries with monthly metrics
+        """
+        # Get all positions for the user in the specified year
+        positions = self.db.query(Position).filter(
+            Position.user_id == user_id,
+            extract('year', Position.applied_date) == year
+        ).all()
+        
+        # Initialize monthly data
+        monthly_stats = {}
+        for month in range(1, 13):
+            monthly_stats[month] = {
+                'month': datetime(year, month, 1).strftime('%B'),
+                'positions_applied': 0,
+                'interviews_conducted': 0,
+                'offers_received': 0
+            }
+        
+        # Count positions by month
+        for position in positions:
+            month = position.applied_date.month
+            monthly_stats[month]['positions_applied'] += 1
+            
+            # Count interviews in this month
+            for interview in position.interviews:
+                if interview.scheduled_date and interview.scheduled_date.year == year:
+                    interview_month = interview.scheduled_date.month
+                    monthly_stats[interview_month]['interviews_conducted'] += 1
+            
+            # Count offers in this month
+            if position.status == PositionStatus.OFFER and position.updated_at:
+                if position.updated_at.year == year:
+                    offer_month = position.updated_at.month
+                    monthly_stats[offer_month]['offers_received'] += 1
+        
+        return list(monthly_stats.values())

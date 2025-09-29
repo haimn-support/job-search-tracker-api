@@ -153,3 +153,59 @@ async def get_company_statistics(
     
     statistics_service = StatisticsService(db)
     return statistics_service.get_company_statistics(current_user.id, filters)
+
+
+@router.get("/success-rates")
+async def get_success_rates(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get success rate statistics for the current user's job applications.
+    
+    This endpoint provides success rate metrics including:
+    - Application to interview rate
+    - Interview to offer rate
+    - Overall success rate
+    - Average interviews per position
+    """
+    statistics_service = StatisticsService(db)
+    return statistics_service.get_success_rates(current_user.id)
+
+
+@router.get("/top-companies")
+async def get_top_companies(
+    limit: int = Query(10, description="Number of top companies to return"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get top performing companies based on success rates.
+    
+    This endpoint provides company performance metrics including:
+    - Company name
+    - Total applications
+    - Total interviews
+    - Total offers
+    - Success rate
+    """
+    statistics_service = StatisticsService(db)
+    return statistics_service.get_top_companies(current_user.id, limit)
+
+
+@router.get("/monthly/{year}")
+async def get_monthly_statistics(
+    year: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get monthly statistics for a specific year.
+    
+    This endpoint provides monthly metrics including:
+    - Positions applied per month
+    - Interviews conducted per month
+    - Offers received per month
+    """
+    statistics_service = StatisticsService(db)
+    return statistics_service.get_monthly_statistics(current_user.id, year)
