@@ -26,6 +26,35 @@ from ..models.interview import InterviewOutcome
 router = APIRouter(tags=["Interviews"])
 
 
+@router.get("/", response_model=list[InterviewResponse])
+async def get_all_interviews(
+    current_user_id: UUID = Depends(get_current_user_id),
+    interview_repo: InterviewRepository = Depends(get_interview_repository),
+    position_repo: PositionRepository = Depends(get_position_repository)
+):
+    """
+    Get all interviews across all positions for the current user.
+    
+    Returns all interview records for positions that belong to the authenticated user.
+    """
+    try:
+        # Get all positions for the user first
+        user_positions = position_repo.get_all_for_user(current_user_id, skip=0, limit=1000)
+        
+        # Get all interviews for these positions
+        all_interviews = []
+        for position in user_positions[0]:  # user_positions is (positions, total)
+            interviews = interview_repo.get_by_position(position.id)
+            all_interviews.extend(interviews)
+        
+        return [InterviewResponse.model_validate(interview) for interview in all_interviews]
+    except Exception as e:
+        raise DatabaseException(
+            detail="Failed to retrieve interviews",
+            operation="interview_listing_all"
+        )
+
+
 def get_interview_repository(db: Session = Depends(get_db)) -> InterviewRepository:
     """Dependency to get interview repository instance."""
     return InterviewRepository(db)
