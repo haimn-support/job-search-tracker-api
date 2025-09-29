@@ -77,13 +77,13 @@ class StatisticsService:
         interview_outcome_breakdown = self._calculate_interview_outcome_breakdown(interviews)
         
         return StatisticsOverview(
-            total_applications=total_applications,
+            total_positions=total_applications,
             total_companies=total_companies,
             total_interviews=total_interviews,
             response_rate=response_rate,
             interview_rate=interview_rate,
             offer_rate=offer_rate,
-            status_breakdown=status_breakdown,
+            positions_by_status=status_breakdown,
             interview_type_breakdown=interview_type_breakdown,
             interview_outcome_breakdown=interview_outcome_breakdown
         )

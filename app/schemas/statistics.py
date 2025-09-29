@@ -9,14 +9,14 @@ from .enums import PositionStatus, InterviewType, InterviewOutcome
 
 class StatisticsOverview(BaseModel):
     """Schema for general statistics overview."""
-    total_applications: int = Field(..., description="Total number of applications")
+    total_positions: int = Field(..., description="Total number of applications")
     total_companies: int = Field(..., description="Total number of unique companies")
     total_interviews: int = Field(..., description="Total number of interviews")
     response_rate: float = Field(..., description="Percentage of applications that got responses")
     interview_rate: float = Field(..., description="Percentage of applications that led to interviews")
     offer_rate: float = Field(..., description="Percentage of applications that led to offers")
     
-    status_breakdown: Dict[PositionStatus, int] = Field(..., description="Count by position status")
+    positions_by_status: Dict[PositionStatus, int] = Field(..., description="Count by position status")
     interview_type_breakdown: Dict[InterviewType, int] = Field(..., description="Count by interview type")
     interview_outcome_breakdown: Dict[InterviewOutcome, int] = Field(..., description="Count by interview outcome")
 
