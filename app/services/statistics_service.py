@@ -564,7 +564,7 @@ class StatisticsService:
         # Get all positions for the user in the specified year
         positions = self.db.query(Position).filter(
             Position.user_id == user_id,
-            extract('year', Position.applied_date) == year
+            extract('year', Position.application_date) == year
         ).all()
         
         # Initialize monthly data
@@ -579,7 +579,7 @@ class StatisticsService:
         
         # Count positions by month
         for position in positions:
-            month = position.applied_date.month
+            month = position.application_date.month
             monthly_stats[month]['positions_applied'] += 1
             
             # Count interviews in this month
