@@ -209,3 +209,21 @@ async def get_monthly_statistics(
     """
     statistics_service = StatisticsService(db)
     return statistics_service.get_monthly_statistics(current_user.id, year)
+
+
+@router.get("/companies/{company_name}")
+async def get_company_details(
+    company_name: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get detailed statistics for a specific company including all positions.
+    
+    This endpoint provides comprehensive company metrics including:
+    - Company name and basic statistics
+    - All positions for this company
+    - Success rate and interview details
+    """
+    statistics_service = StatisticsService(db)
+    return statistics_service.get_company_details(current_user.id, company_name)

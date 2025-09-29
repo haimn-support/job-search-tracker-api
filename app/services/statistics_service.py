@@ -595,3 +595,71 @@ class StatisticsService:
                     monthly_stats[offer_month]['offers_received'] += 1
         
         return list(monthly_stats.values())
+    
+    def get_company_details(self, user_id: UUID, company_name: str) -> Dict[str, any]:
+        """
+        Get detailed statistics for a specific company including all positions.
+        
+        Args:
+            user_id: The user ID to get company details for
+            company_name: The name of the company
+            
+        Returns:
+            Dictionary with company details and positions
+        """
+        # Get all positions for the user at this company
+        positions = self.db.query(Position).filter(
+            Position.user_id == user_id,
+            Position.company == company_name
+        ).all()
+        
+        if not positions:
+            return {
+                "company_name": company_name,
+                "total_applications": 0,
+                "total_interviews": 0,
+                "success_rate": 0.0,
+                "positions": []
+            }
+        
+        # Calculate statistics
+        total_applications = len(positions)
+        total_interviews = sum(len(pos.interviews) for pos in positions)
+        total_offers = sum(1 for pos in positions if pos.status == PositionStatus.OFFER)
+        success_rate = round((total_offers / total_applications) * 100, 2) if total_applications > 0 else 0.0
+        
+        # Format positions data
+        positions_data = []
+        for position in positions:
+            position_data = {
+                "id": str(position.id),
+                "title": position.title,
+                "company": position.company,
+                "location": position.location,
+                "status": position.status.value,
+                "application_date": position.application_date.isoformat() if position.application_date else None,
+                "salary_range": position.salary_range,
+                "description": position.description,
+                "interviews": []
+            }
+            
+            # Add interview details
+            for interview in position.interviews:
+                interview_data = {
+                    "id": str(interview.id),
+                    "type": interview.type.value if interview.type else None,
+                    "scheduled_date": interview.scheduled_date.isoformat() if interview.scheduled_date else None,
+                    "outcome": interview.outcome.value if interview.outcome else None,
+                    "notes": interview.notes
+                }
+                position_data["interviews"].append(interview_data)
+            
+            positions_data.append(position_data)
+        
+        return {
+            "company_name": company_name,
+            "total_applications": total_applications,
+            "total_interviews": total_interviews,
+            "success_rate": success_rate,
+            "positions": positions_data
+        }
