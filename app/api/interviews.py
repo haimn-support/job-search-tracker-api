@@ -214,11 +214,56 @@ async def update_interview(
                 resource_id=str(interview_id)
             )
         
+        # If outcome is failed, update position status to rejected
+        if (interview_data.outcome and 
+            interview_data.outcome == InterviewOutcome.FAILED):
+            position_repo.update_status(updated_interview.position_id, current_user_id, PositionStatus.REJECTED)
+        
         return InterviewResponse.model_validate(updated_interview)
     except Exception as e:
         raise DatabaseException(
             detail="Failed to update interview",
             operation="interview_update"
+        )
+
+
+@router.patch("/interviews/{interview_id}", response_model=InterviewResponse)
+async def patch_interview(
+    interview_id: UUID,
+    interview_data: InterviewUpdate,
+    current_user_id: UUID = Depends(get_current_user_id),
+    interview_repo: InterviewRepository = Depends(get_interview_repository),
+    position_repo: PositionRepository = Depends(get_position_repository)
+):
+    """
+    Partially update a specific interview using PATCH.
+    
+    Updates only the provided fields of the interview if it exists and its associated position belongs to the authenticated user.
+    If the outcome is updated to 'failed', the associated position status will be updated to 'rejected'.
+    """
+    # Verify interview exists and belongs to user
+    interview = verify_interview_ownership(
+        interview_id, current_user_id, interview_repo, position_repo
+    )
+    
+    try:
+        updated_interview = interview_repo.update(interview_id, interview_data)
+        if not updated_interview:
+            raise ResourceNotFoundException(
+                resource_type="Interview",
+                resource_id=str(interview_id)
+            )
+        
+        # If outcome is failed, update position status to rejected
+        if (interview_data.outcome and 
+            interview_data.outcome == InterviewOutcome.FAILED):
+            position_repo.update_status(updated_interview.position_id, current_user_id, PositionStatus.REJECTED)
+        
+        return InterviewResponse.model_validate(updated_interview)
+    except Exception as e:
+        raise DatabaseException(
+            detail="Failed to patch interview",
+            operation="interview_patch"
         )
 
 
