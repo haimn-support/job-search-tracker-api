@@ -1,0 +1,18 @@
+controller:
+  serviceAccount:
+    create: false
+    name: ebs-csi-controller-sa
+  volumeModificationFeature:
+    enabled: true
+  volumeSnapshotFeature:
+    enabled: true
+
+storageClasses:
+  - name: ebs-sc
+    annotations:
+      storageclass.kubernetes.io/is-default-class: "false"
+    volumeBindingMode: WaitForFirstConsumer
+    reclaimPolicy: Delete
+    parameters:
+      type: gp3
+      encrypted: "true"

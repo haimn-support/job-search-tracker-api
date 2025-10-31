@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: manual-postgresql-pv
+  labels:
+    app: postgresql
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: ebs-sc
+  # Node affinity - restrict to the AZ where the EC2 instance is
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: topology.kubernetes.io/zone
+              operator: In
+              values:
+                - "us-east-2a"          # e.g. us-east-2a
+  csi:
+    driver: ebs.csi.eks.amazonaws.com
+    volumeHandle: "vol-0735e03ccd407ea73"   # e.g. vol-0abcd1234
+    fsType: ext4
+  claimRef:
+    namespace: interview-tracker
+    name: postgresql-pvc
+  claimRef:
+    namespace: interview-tracker
+    name: postgresql-pvc

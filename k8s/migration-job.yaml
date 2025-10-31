@@ -16,7 +16,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: migration
-        image: interview-tracker-api:latest  # Same image as API
+        image: haim9798/interview-tracker-api:latest  # Same image as API (use DockerHub image)
         command: ["alembic", "upgrade", "head"]
         env:
         - name: DATABASE_URL

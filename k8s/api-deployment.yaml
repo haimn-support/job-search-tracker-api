@@ -6,8 +6,10 @@ metadata:
   labels:
     app: interview-position-tracker
     component: api
+    portWorkload: interview-tracker-api
+    service: job-search-tracker-api
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -25,7 +27,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: interview-tracker-api:latest  # Replace with your actual image
+        image: haim9798/job-search-tracker-api:latest  # Replace with your actual DockerHub image
         ports:
         - containerPort: 8000
         env:

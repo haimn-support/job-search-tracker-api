@@ -4,7 +4,12 @@ metadata:
   name: interview-tracker-config
   namespace: interview-tracker
 data:
-  # Application Configuration
+  # Application runtime
+  ENVIRONMENT: "production"
+  DEBUG: "false"
+  TESTING: "false"
+
+  # Application Configuration (frontend)
   REACT_APP_ENV: "production"
   REACT_APP_API_URL: "https://api.interview-tracker.com"
   REACT_APP_APP_NAME: "Interview Position Tracker"
@@ -13,37 +18,34 @@ data:
   REACT_APP_ENABLE_DEVTOOLS: "false"
   REACT_APP_LOG_LEVEL: "error"
   GENERATE_SOURCEMAP: "false"
-  
-  # Database Configuration
-  DATABASE_URL: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgresql:5432/interview_tracker"
-  
-  # Security Configuration
+
+  # Security / Auth (non-sensitive values)
   ACCESS_TOKEN_EXPIRE_MINUTES: "15"
   ALGORITHM: "HS256"
-  
-  # CORS Configuration
+
+  # CORS
   BACKEND_CORS_ORIGINS: '["https://interview-tracker.com"]'
-  
-  # Logging Configuration
+
+  # Logging
   LOG_LEVEL: "WARNING"
-  
-  # Health Check Configuration
+
+  # Health check toggle
   HEALTH_CHECK_ENABLED: "true"
-  
-  # Performance Configuration
+
+  # Performance tuning
   WORKERS: "4"
   MAX_CONNECTIONS: "100"
   TIMEOUT: "30"
-  
-  # Cache Configuration
+
+  # Cache (non-sensitive URL)
   REDIS_URL: "redis://redis:6379"
   CACHE_TTL: "3600"
-  
-  # Monitoring Configuration
+
+  # Monitoring
   ENABLE_METRICS: "true"
   METRICS_PORT: "9090"
-  
-  # Feature Flags
+
+  # Feature flags
   ENABLE_REGISTRATION: "true"
   ENABLE_EMAIL_NOTIFICATIONS: "true"
   ENABLE_ANALYTICS: "true"

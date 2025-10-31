@@ -1,0 +1,26 @@
+{
+    "Snapshots": [
+        {
+            "Tags": [
+                {
+                    "Key": "Name",
+                    "Value": "postgresql-backup-cleanup"
+                }
+            ],
+            "StorageTier": "standard",
+            "TransferType": "standard",
+            "CompletionTime": "2025-10-30T17:13:17.025000+00:00",
+            "FullSnapshotSizeInBytes": 0,
+            "SnapshotId": "snap-0872946dc4da61963",
+            "VolumeId": "vol-0735e03ccd407ea73",
+            "State": "completed",
+            "StartTime": "2025-10-30T17:12:38.909000+00:00",
+            "Progress": "100%",
+            "OwnerId": "702127849152",
+            "Description": "Backup before PV/PVC cleanup - PostgreSQL data",
+            "VolumeSize": 20,
+            "Encrypted": true,
+            "KmsKeyId": "arn:aws:kms:us-east-2:702127849152:key/45d20ed0-e1a1-4c9d-80d4-7b169d7f43fc"
+        }
+    ]
+}
