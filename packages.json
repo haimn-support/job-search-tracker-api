@@ -1,0 +1,104 @@
+{
+  "dependencies": [
+    {
+      "name": "fastapi",
+      "version": "0.104.1",
+      "id": "pkg-2"
+    },
+    {
+      "name": "uvicorn[standard]",
+      "version": "0.24.0",
+      "id": "pkg-3"
+    },
+    {
+      "name": "sqlalchemy",
+      "version": "2.0.23",
+      "id": "pkg-6"
+    },
+    {
+      "name": "alembic",
+      "version": "1.12.1",
+      "id": "pkg-7"
+    },
+    {
+      "name": "psycopg2-binary",
+      "version": "2.9.9",
+      "id": "pkg-8"
+    },
+    {
+      "name": "python-jose[cryptography]",
+      "version": "3.3.0",
+      "id": "pkg-11"
+    },
+    {
+      "name": "passlib[bcrypt]",
+      "version": "1.7.4",
+      "id": "pkg-12"
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.6",
+      "id": "pkg-13"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.5.0",
+      "id": "pkg-16"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.1.0",
+      "id": "pkg-17"
+    },
+    {
+      "name": "email-validator",
+      "version": "2.1.1",
+      "id": "pkg-18"
+    },
+    {
+      "name": "pytest",
+      "version": "7.4.3",
+      "id": "pkg-21"
+    },
+    {
+      "name": "pytest-asyncio",
+      "version": "0.21.1",
+      "id": "pkg-22"
+    },
+    {
+      "name": "httpx",
+      "version": "0.25.2",
+      "id": "pkg-23"
+    },
+    {
+      "name": "pandas",
+      "version": "2.2.0",
+      "id": "pkg-26"
+    },
+    {
+      "name": "numpy",
+      "version": "1.26.0",
+      "id": "pkg-27"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.0.0",
+      "id": "pkg-30"
+    },
+    {
+      "name": "black",
+      "version": "23.11.0",
+      "id": "pkg-33"
+    },
+    {
+      "name": "flake8",
+      "version": "6.1.0",
+      "id": "pkg-34"
+    },
+    {
+      "name": "mypy",
+      "version": "1.7.1",
+      "id": "pkg-35"
+    }
+  ]
+}
