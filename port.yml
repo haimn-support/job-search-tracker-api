@@ -4,6 +4,6 @@
   blueprint: service 
   properties:
     type: "backend"
-    lifecycle: "Introduction"
+    lifecycle: "Experimental"
   relations:
     domain: "job-search-tracker-backend"
