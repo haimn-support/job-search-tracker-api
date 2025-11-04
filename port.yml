@@ -1,0 +1,9 @@
+# enrichService.yml
+
+- identifier: "job-search-tracker-api"
+  blueprint: service 
+  properties:
+    type: "backend"
+    lifecycle: "Introduction"
+  relations:
+    domain: "job-search-tracker-backend"
