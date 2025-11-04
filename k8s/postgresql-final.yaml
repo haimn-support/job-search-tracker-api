@@ -1,0 +1,102 @@
+# Final PostgreSQL deployment with no authentication issues
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-init
+  namespace: interview-tracker
+data:
+  init.sql: |
+    -- Create database if it doesn't exist
+    SELECT 'CREATE DATABASE interview_tracker' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'interview_tracker')\gexec
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-final
+  namespace: interview-tracker
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: postgresql
+      version: final
+  template:
+    metadata:
+      labels:
+        app: postgresql
+        version: final
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "interview_tracker"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: interview-tracker-secrets
+              key: postgres-password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+        - name: postgresql-storage
+          mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        # Use TCP socket check instead of pg_isready to avoid auth issues
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgresql-storage
+        persistentVolumeClaim:
+          claimName: local-postgresql-pvc  # Reuse existing working PVC
+      - name: init-scripts
+        configMap:
+          name: postgresql-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-final
+  namespace: interview-tracker
+  labels:
+    app: postgresql
+    version: final
+spec:
+  selector:
+    app: postgresql
+    version: final
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  type: ClusterIP
